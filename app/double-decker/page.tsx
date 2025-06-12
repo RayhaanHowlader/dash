@@ -11,6 +11,7 @@ import Loading from '../loading';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeIn, staggerContainer, slideIn } from '../../utils/motion';
 import Logo from '../../components/Logo';
+import * as XLSX from 'xlsx';
 
 interface Vehicle {
   _id: string;
@@ -188,6 +189,7 @@ export default function DoubleDeckerPage() {
   const [trips, setTrips] = useState<{ [key: string]: Trip[] }>({});
   const [tableFontSize, setTableFontSize] = useState(14);
   const [tableRowHeight, setTableRowHeight] = useState(32);
+  const [placeFilter, setPlaceFilter] = useState<string>("");
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -730,6 +732,286 @@ export default function DoubleDeckerPage() {
     );
   };
 
+  // Function to handle Excel export
+  const handleExcelExport = () => {
+    try {
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      
+      // Create a single worksheet with all data
+      const wsData: any[] = [];
+      
+      // Group vehicles by status
+      const statusGroups = {
+        'Available Vehicles': filteredVehicles.filter(v => v.currentTripStatus === 'available'),
+        'In Transit Vehicles': filteredVehicles.filter(v => v.currentTripStatus === 'in-transit'),
+        'At Unloading Vehicles': filteredVehicles.filter(v => v.currentTripStatus === 'at-unloading'),
+        'Empty Movement Vehicles': filteredVehicles.filter(v => v.currentTripStatus === 'empty-movement'),
+        'Off Duty Vehicles': filteredVehicles.filter(v => v.currentTripStatus === 'off-duty'),
+        'At Pickup Vehicles': filteredVehicles.filter(v => v.currentTripStatus === 'at-pickup'),
+        'Enroute for Pickup Vehicles': filteredVehicles.filter(v => v.currentTripStatus === 'enroute-for-pickup'),
+        'Maintenance Vehicles': filteredVehicles.filter(v => v.currentTripStatus === 'maintenance')
+      };
+      
+      // Add each status group to the worksheet with headers
+      Object.entries(statusGroups).forEach(([status, vehicles]) => {
+        if (vehicles.length === 0) return;
+        
+        // Add section header
+        wsData.push([status]);
+        
+        // Determine if we need to include PKMS column based on vehicle status
+        const includesPKMS = !status.includes('Available'); // PKMS only for non-available vehicles
+        
+        // Add headers with or without PKMS
+        const headers = includesPKMS 
+          ? ['Vehicle Number', 'Type', 'Place', 'Halt Hours', 'PKMS'] 
+          : ['Vehicle Number', 'Type', 'Place', 'Halt Hours'];
+        
+        wsData.push(headers);
+        
+        vehicles.forEach(vehicle => {
+          // Get place based on status
+          let place = '-';
+          if (vehicle.currentTripStatus === 'available') {
+            const allTrips = trips[vehicle.vehicleNumber] || [];
+            const latestTrip = allTrips[0];
+            
+            // Helper functions to get place info
+            const getMaintenancePlace = (tripObj: any) => {
+              if (!tripObj || !Array.isArray(tripObj.intermediatePoints)) return null;
+              for (const point of tripObj.intermediatePoints) {
+                if (point.maintenance?.serviceStation?.name) {
+                  return point.maintenance.serviceStation.name;
+                }
+              }
+              return null;
+            };
+            
+            const getOffDutyAreaName = (tripObj: any) => {
+              if (!tripObj || !Array.isArray(tripObj.intermediatePoints)) return null;
+              for (const point of tripObj.intermediatePoints) {
+                if (point.offDuty?.area?.name) {
+                  return point.offDuty.area.name;
+                }
+              }
+              return null;
+            };
+            
+            if (latestTrip?.status === 'discarded') {
+              const recentCompleteTrip = allTrips.find(t => t.status === 'complete');
+              if (recentCompleteTrip?.destination?.name) {
+                place = recentCompleteTrip.destination.name;
+              } else {
+                const maintPlace = getMaintenancePlace(recentCompleteTrip);
+                if (maintPlace) place = maintPlace;
+                else {
+                  const offDutyArea = getOffDutyAreaName(recentCompleteTrip);
+                  if (offDutyArea) place = offDutyArea;
+                }
+              }
+            } else if (latestTrip?.destination?.name) {
+              place = latestTrip.destination.name;
+            } else {
+              const maintPlace = getMaintenancePlace(latestTrip);
+              if (maintPlace) place = maintPlace;
+              else {
+                const offDutyArea = getOffDutyAreaName(latestTrip);
+                if (offDutyArea) place = offDutyArea;
+              }
+            }
+          } else if (vehicle.currentTripStatus === 'in-transit') {
+            place = vehicle.waypoint?.name || '-';
+          } else if (vehicle.currentTripStatus === 'at-unloading') {
+            const trip = (trips[vehicle.vehicleNumber] || [])[0];
+            place = trip?.destination?.name || '-';
+          } else if (vehicle.currentTripStatus === 'at-pickup') {
+            const latestTrip = (trips[vehicle.vehicleNumber] || [])[0];
+            place = latestTrip?.origin?.name || '-';
+          } else if (vehicle.currentTripStatus === 'off-duty') {
+            const latestTrip = (trips[vehicle.vehicleNumber] || [])[0];
+            place = latestTrip?.intermediatePoints?.[0]?.offDuty?.area?.name || '-';
+          } else if (vehicle.currentTripStatus === 'maintenance') {
+            const latestTrip = (trips[vehicle.vehicleNumber] || [])[0];
+            place = latestTrip?.intermediatePoints?.[0]?.maintenance?.serviceStation?.name || '-';
+          } else if (vehicle.currentTripStatus === 'enroute-for-pickup') {
+            const latestTrip = (trips[vehicle.vehicleNumber] || [])[0];
+            place = latestTrip?.origin?.name || '-';
+          } else {
+            place = vehicle.waypoint?.name || '-';
+          }
+          
+          // Format halting hours
+          const hours = vehicle.waypoint?.haltingHours || 0;
+          const days = Math.floor(hours / 24);
+          const remainingHours = hours % 24;
+          const haltHrs = days > 0 ? `${days}d ${remainingHours}h` : `${hours}h`;
+          
+          // Calculate pending distance for non-available vehicles
+          let pendingDistance = 'N/A';
+          if (includesPKMS) {
+            try {
+              const allTrips = trips[vehicle.vehicleNumber] || [];
+              const trip = allTrips[0];
+              const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+              const R = 6371; // Earth's radius in km
+              
+              let destLat = null;
+              let destLng = null;
+              if (trip?.destination) {
+                if ('latitude' in trip.destination && 'longitude' in trip.destination) {
+                  destLat = (trip.destination as any).latitude;
+                  destLng = (trip.destination as any).longitude;
+                } else if (trip.destination.coordinates?.lat != null && trip.destination.coordinates?.lng != null) {
+                  destLat = trip.destination.coordinates.lat;
+                  destLng = trip.destination.coordinates.lng;
+                }
+              }
+              
+              if (
+                vehicle.waypoint?.lat != null &&
+                vehicle.waypoint?.lngt != null &&
+                destLat != null &&
+                destLng != null
+              ) {
+                const lat1 = toRadians(vehicle.waypoint.lat);
+                const lon1 = toRadians(vehicle.waypoint.lngt);
+                const lat2 = toRadians(destLat);
+                const lon2 = toRadians(destLng);
+
+                const dLat = lat2 - lat1;
+                const dLon = lon2 - lon1;
+
+                const a =
+                  Math.sin(dLat / 2) ** 2 +
+                  Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                pendingDistance = (R * c).toFixed(2) + ' km';
+              }
+            } catch (error) {
+              console.error('Error calculating distance:', error);
+              pendingDistance = 'N/A';
+            }
+          }
+          
+          // Create row data with or without PKMS
+          const rowData = includesPKMS
+            ? [vehicle.vehicleNumber, vehicle.vehicleType, place, haltHrs, pendingDistance]
+            : [vehicle.vehicleNumber, vehicle.vehicleType, place, haltHrs];
+          
+          wsData.push(rowData);
+        });
+        
+        // Add empty row after each section for better readability
+        wsData.push([]);
+      });
+      
+      // Create worksheet and add to workbook
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      XLSX.utils.book_append_sheet(wb, ws, "Double Decker Vehicles");
+      
+      // Write workbook and trigger download
+      XLSX.writeFile(wb, `Double_Decker_Vehicles_${new Date().toISOString().split('T')[0]}.xlsx`);
+    } catch (err) {
+      console.error('Error exporting to Excel:', err);
+      alert('Failed to export data to Excel');
+    }
+  };
+  
+  // Filter vehicles by place
+  const filterByPlace = (vehicles: Vehicle[], placeFilter: string) => {
+    if (!placeFilter.trim()) return vehicles;
+    
+    return vehicles.filter(vehicle => {
+      // Get place based on status
+      let place = '';
+      
+      if (vehicle.currentTripStatus === 'available') {
+        const allTrips = trips[vehicle.vehicleNumber] || [];
+        const latestTrip = allTrips[0];
+        
+        // Helper functions to get place info
+        const getMaintenancePlace = (tripObj: any) => {
+          if (!tripObj || !Array.isArray(tripObj.intermediatePoints)) return null;
+          for (const point of tripObj.intermediatePoints) {
+            if (point.maintenance?.serviceStation?.name) {
+              return point.maintenance.serviceStation.name;
+            }
+          }
+          return null;
+        };
+        
+        const getOffDutyAreaName = (tripObj: any) => {
+          if (!tripObj || !Array.isArray(tripObj.intermediatePoints)) return null;
+          for (const point of tripObj.intermediatePoints) {
+            if (point.offDuty?.area?.name) {
+              return point.offDuty.area.name;
+            }
+          }
+          return null;
+        };
+        
+        if (latestTrip?.status === 'discarded') {
+          const recentCompleteTrip = allTrips.find(t => t.status === 'complete');
+          if (recentCompleteTrip?.destination?.name) {
+            place = recentCompleteTrip.destination.name;
+          } else {
+            const maintPlace = getMaintenancePlace(recentCompleteTrip);
+            if (maintPlace) place = maintPlace;
+            else {
+              const offDutyArea = getOffDutyAreaName(recentCompleteTrip);
+              if (offDutyArea) place = offDutyArea;
+            }
+          }
+        } else if (latestTrip?.destination?.name) {
+          place = latestTrip.destination.name;
+        } else {
+          const maintPlace = getMaintenancePlace(latestTrip);
+          if (maintPlace) place = maintPlace;
+          else {
+            const offDutyArea = getOffDutyAreaName(latestTrip);
+            if (offDutyArea) place = offDutyArea;
+          }
+        }
+      } else if (vehicle.currentTripStatus === 'in-transit') {
+        place = vehicle.waypoint?.name || '';
+      } else if (vehicle.currentTripStatus === 'at-unloading') {
+        const trip = (trips[vehicle.vehicleNumber] || [])[0];
+        place = trip?.destination?.name || '';
+      } else if (vehicle.currentTripStatus === 'at-pickup') {
+        const latestTrip = (trips[vehicle.vehicleNumber] || [])[0];
+        place = latestTrip?.origin?.name || '';
+      } else if (vehicle.currentTripStatus === 'off-duty') {
+        const latestTrip = (trips[vehicle.vehicleNumber] || [])[0];
+        place = latestTrip?.intermediatePoints?.[0]?.offDuty?.area?.name || '';
+      } else if (vehicle.currentTripStatus === 'maintenance') {
+        const latestTrip = (trips[vehicle.vehicleNumber] || [])[0];
+        place = latestTrip?.intermediatePoints?.[0]?.maintenance?.serviceStation?.name || '';
+      } else if (vehicle.currentTripStatus === 'enroute-for-pickup') {
+        const latestTrip = (trips[vehicle.vehicleNumber] || [])[0];
+        place = latestTrip?.origin?.name || '';
+      } else {
+        place = vehicle.waypoint?.name || '';
+      }
+      
+      return place.toLowerCase().includes(placeFilter.toLowerCase());
+    });
+  };
+
+  // Update filtered vehicles when place filter changes
+  useEffect(() => {
+    let filtered = vehicles;
+    if (dateFilter) {
+      filtered = filtered.filter(v => new Date(v.updatedAt) >= dateFilter);
+    }
+    
+    // Apply place filter
+    filtered = filterByPlace(filtered, placeFilter);
+    
+    setFilteredVehicles(filtered);
+  }, [dateFilter, vehicles, placeFilter, trips]);
+
   if (loading) {
     return (
       <div className="flex h-screen bg-black">
@@ -769,6 +1051,27 @@ export default function DoubleDeckerPage() {
               </div>
               <div className="flex-1 flex justify-center">
                 <span className="text-white font-bold text-2xl">APML CONTROL24 X7</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Filter by place..."
+                    value={placeFilter}
+                    onChange={(e) => setPlaceFilter(e.target.value)}
+                    className="px-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:border-red-500"
+                  />
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={handleExcelExport}
+                  className="flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Download All Data (Excel)
+                </Button>
               </div>
             </div>
           </div>
