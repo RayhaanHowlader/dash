@@ -9,7 +9,6 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Loading from '../loading';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fadeIn, staggerContainer, slideIn } from '../../utils/motion';
 import Logo from '../../components/Logo';
 import * as XLSX from 'xlsx';
 
@@ -79,14 +78,14 @@ const VehicleDetailsModal = ({ vehicle, onClose }: VehicleDetailsModalProps) => 
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-[#2d2d2d] rounded-lg shadow-xl w-full max-w-2xl mx-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-white">Vehicle Details</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Vehicle Details</h2>
             <Button
               variant="ghost"
               onClick={onClose}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-500 hover:text-gray-700"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -97,15 +96,15 @@ const VehicleDetailsModal = ({ vehicle, onClose }: VehicleDetailsModalProps) => 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <h3 className="text-gray-400 text-sm">Vehicle Number</h3>
-                <p className="text-white text-lg font-medium">{vehicle.vehicleNumber}</p>
+                <h3 className="text-gray-500 text-sm">Vehicle Number</h3>
+                <p className="text-gray-900 text-lg font-medium">{vehicle.vehicleNumber}</p>
               </div>
               <div>
-                <h3 className="text-gray-400 text-sm">Vehicle Type</h3>
-                <p className="text-white text-lg font-medium">{vehicle.vehicleType}</p>
+                <h3 className="text-gray-500 text-sm">Vehicle Type</h3>
+                <p className="text-gray-900 text-lg font-medium">{vehicle.vehicleType}</p>
               </div>
               <div>
-                <h3 className="text-gray-400 text-sm">Current Status</h3>
+                <h3 className="text-gray-500 text-sm">Current Status</h3>
                 <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
                   vehicle.currentTripStatus === 'in-transit' 
                     ? 'bg-green-500/10 text-green-500' 
@@ -122,21 +121,21 @@ const VehicleDetailsModal = ({ vehicle, onClose }: VehicleDetailsModalProps) => 
             
             <div className="space-y-4">
               <div>
-                <h3 className="text-gray-400 text-sm">Created At</h3>
-                <p className="text-white text-lg font-medium">
+                <h3 className="text-gray-500 text-sm">Created At</h3>
+                <p className="text-gray-900 text-lg font-medium">
                   {new Date(vehicle.createdAt).toLocaleString()}
                 </p>
               </div>
               <div>
-                <h3 className="text-gray-400 text-sm">Last Updated</h3>
-                <p className="text-white text-lg font-medium">
+                <h3 className="text-gray-500 text-sm">Last Updated</h3>
+                <p className="text-gray-900 text-lg font-medium">
                   {new Date(vehicle.updatedAt).toLocaleString()}
                 </p>
               </div>
               {vehicle.haltingHours !== undefined && (
                 <div>
-                  <h3 className="text-gray-400 text-sm">Halting Hrs</h3>
-                  <p className="text-white text-lg font-medium">
+                  <h3 className="text-gray-500 text-sm">Halting Hrs</h3>
+                  <p className="text-gray-900 text-lg font-medium">
                     {vehicle.haltingHours} hours
                   </p>
                 </div>
@@ -145,7 +144,11 @@ const VehicleDetailsModal = ({ vehicle, onClose }: VehicleDetailsModalProps) => 
           </div>
 
           <div className="mt-8 flex justify-end">
-            <Button variant="primary" onClick={onClose}>
+            <Button 
+              variant="primary" 
+              onClick={onClose}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
               Close
             </Button>
           </div>
@@ -463,7 +466,7 @@ export default function SXLPage() {
 
   const FilterDropdown = ({ onFilter }: { onFilter: (filter: string) => void }) => {
     return (
-      <div className="absolute right-0 mt-2 w-48 bg-[#2d2d2d] rounded-lg shadow-xl border border-gray-700 z-10">
+      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-300 z-10">
         <div className="py-1">
           {/* <button
             onClick={() => onFilter('all')}
@@ -479,13 +482,13 @@ export default function SXLPage() {
           </button> */}
           <button
             onClick={() => onFilter('maintenance')}
-            className="block w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-gray-700 hover:text-white"
+            className="block w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-900"
           >
             In Maintenance
           </button>
           <button
             onClick={() => onFilter('halting')}
-            className="block w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-gray-700 hover:text-white"
+            className="block w-full text-left px-4 py-2 text-sm text-gray-500 hover:bg-gray-200 hover:text-gray-900"
           >
             Halting Vehicles
           </button>
@@ -563,100 +566,99 @@ export default function SXLPage() {
 
     return (
       <div className="mb-8">
-        <div className="flex items-center gap-2 bg-black p-2 rounded-t-lg border-b border-gray-700">
-          <div className="bg-red-900 text-white font-bold w-8 h-8 flex items-center justify-center rounded">
+        <div className="flex items-center gap-2 bg-blue-900 p-3 rounded-t-lg">
+          <div className="bg-blue-700 text-white font-bold w-8 h-8 flex items-center justify-center rounded">
             {sortedVehicles.length}
           </div>
           <h2 className="text-xl font-bold text-white">{title}</h2>
         </div>
-        <div className="bg-black rounded-lg border border-gray-700">
+        <div className="bg-gray-900 rounded-b-lg">
           <div className="overflow-x-auto">
-            <table className="w-auto" style={{ fontSize: fontSize + 'px' }}>
-            <thead className="sticky top-0 z-10 bg-black">
-              <tr className="bg-black text-xs border-b border-gray-700" style={{ height: rowHeight + 'px' }}>
-                  <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">VEHICLE NUMBER</th>
-                  <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">TYPE</th>
-                  <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">PLACE</th>
+            <table className="w-full border-collapse" style={{ fontSize: '14px' }}>
+              <thead className="sticky top-0 z-10 bg-gray-900">
+                <tr>
+                  <th className="px-4 py-2 text-left text-gray-300 font-medium border-b border-gray-800">VEHICLE NUMBER</th>
+                  <th className="px-4 py-2 text-left text-gray-300 font-medium border-b border-gray-800">TYPE</th>
+                  <th className="px-4 py-2 text-left text-gray-300 font-medium border-b border-gray-800">PLACE</th>
                   {status === 'in-transit' && (
-                    <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">DESTINATION</th>
+                    <th className="px-4 py-2 text-left text-gray-300 font-medium border-b border-gray-800">DESTINATION</th>
                   )}
-                  <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">HALT HRS</th>
-                {!isAvailableTable && (
-                    <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">PKMS</th>
-                )}
-                <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">IN</th>
-                <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">SP</th>
-                <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">NP</th>
-                <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">PUC</th>
-                <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">DLE</th>
-                <th className="px-2 py-1 text-left text-gray-300 font-medium whitespace-nowrap min-w-[60px]">FIT</th>            
-              </tr>
-               
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {sortedVehicles.map((vehicle) => {
-                // Get all trips for this vehicle
-                const allTrips = trips[vehicle.vehicleNumber] || [];
-                const latestTrip = allTrips[0];
-                const trip = latestTrip; // For compatibility with existing code
-                const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
-                const R = 6371; // Earth's radius in km
+                  <th className="px-4 py-2 text-left text-gray-300 font-medium border-b border-gray-800">HALT HRS</th>
+                  {!isAvailableTable && (
+                    <th className="px-4 py-2 text-left text-gray-300 font-medium border-b border-gray-800">PKMS</th>
+                  )}
+                  <th className="px-4 py-2 text-center text-gray-300 font-medium border-b border-gray-800">IN</th>
+                  <th className="px-4 py-2 text-center text-gray-300 font-medium border-b border-gray-800">SP</th>
+                  <th className="px-4 py-2 text-center text-gray-300 font-medium border-b border-gray-800">NP</th>
+                  <th className="px-4 py-2 text-center text-gray-300 font-medium border-b border-gray-800">PUC</th>
+                  <th className="px-4 py-2 text-center text-gray-300 font-medium border-b border-gray-800">DLE</th>
+                  <th className="px-4 py-2 text-center text-gray-300 font-medium border-b border-gray-800">FIT</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedVehicles.map((vehicle) => {
+                  // Get all trips for this vehicle
+                  const allTrips = trips[vehicle.vehicleNumber] || [];
+                  const latestTrip = allTrips[0];
+                  const trip = latestTrip; // For compatibility with existing code
+                  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+                  const R = 6371; // Earth's radius in km
 
-                // Calculate pending distance if we have both current location and destination
-                let pendingDistance = 'N/A';
-                if (!isAvailableTable) {
-                  try {
-                    let destLat = null;
-                    let destLng = null;
-                    if (trip?.destination) {
-                      if ('latitude' in trip.destination && 'longitude' in trip.destination) {
-                        destLat = (trip.destination as any).latitude;
-                        destLng = (trip.destination as any).longitude;
-                      } else if (trip.destination.coordinates?.lat != null && trip.destination.coordinates?.lng != null) {
-                        destLat = trip.destination.coordinates.lat;
-                        destLng = trip.destination.coordinates.lng;
+                  // Calculate pending distance if we have both current location and destination
+                  let pendingDistance = 'N/A';
+                  if (!isAvailableTable) {
+                    try {
+                      let destLat = null;
+                      let destLng = null;
+                      if (trip?.destination) {
+                        if ('latitude' in trip.destination && 'longitude' in trip.destination) {
+                          destLat = (trip.destination as any).latitude;
+                          destLng = (trip.destination as any).longitude;
+                        } else if (trip.destination.coordinates?.lat != null && trip.destination.coordinates?.lng != null) {
+                          destLat = trip.destination.coordinates.lat;
+                          destLng = trip.destination.coordinates.lng;
+                        }
                       }
+                      if (
+                        vehicle.waypoint?.lat != null &&
+                        vehicle.waypoint?.lngt != null &&
+                        destLat != null &&
+                        destLng != null
+                      ) {
+                        const lat1 = toRadians(vehicle.waypoint.lat);
+                        const lon1 = toRadians(vehicle.waypoint.lngt);
+                        const lat2 = toRadians(destLat);
+                        const lon2 = toRadians(destLng);
+
+                        const dLat = lat2 - lat1;
+                        const dLon = lon2 - lon1;
+
+                        const a =
+                          Math.sin(dLat / 2) ** 2 +
+                          Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        pendingDistance = (R * c).toFixed(2) + ' km';
+                      }
+                    } catch (error) {
+                      console.error('Error calculating distance:', error);
+                      pendingDistance = 'N/A';
                     }
-                    if (
-                      vehicle.waypoint?.lat != null &&
-                      vehicle.waypoint?.lngt != null &&
-                      destLat != null &&
-                      destLng != null
-                    ) {
-                      const lat1 = toRadians(vehicle.waypoint.lat);
-                      const lon1 = toRadians(vehicle.waypoint.lngt);
-                      const lat2 = toRadians(destLat);
-                      const lon2 = toRadians(destLng);
-
-                      const dLat = lat2 - lat1;
-                      const dLon = lon2 - lon1;
-
-                      const a =
-                        Math.sin(dLat / 2) ** 2 +
-                        Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-
-                      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                      pendingDistance = (R * c).toFixed(2) + ' km';
-                    }
-                  } catch (error) {
-                    console.error('Error calculating distance:', error);
-                    pendingDistance = 'N/A';
                   }
-                }
 
-                // Get static status for each column based on vehicle number
-                const inStatus = getStaticStatus(vehicle.vehicleNumber + 'IN');
-                const spStatus = getStaticStatus(vehicle.vehicleNumber + 'SP');
-                const npStatus = getStaticStatus(vehicle.vehicleNumber + 'NP');
-                const pucStatus = getStaticStatus(vehicle.vehicleNumber + 'PUC');
-                const dleStatus = getStaticStatus(vehicle.vehicleNumber + 'DLE');
-                const fitStatus = getStaticStatus(vehicle.vehicleNumber + 'FIT');
+                  // Get static status for each column based on vehicle number
+                  const inStatus = getStaticStatus(vehicle.vehicleNumber + 'IN');
+                  const spStatus = getStaticStatus(vehicle.vehicleNumber + 'SP');
+                  const npStatus = getStaticStatus(vehicle.vehicleNumber + 'NP');
+                  const pucStatus = getStaticStatus(vehicle.vehicleNumber + 'PUC');
+                  const dleStatus = getStaticStatus(vehicle.vehicleNumber + 'DLE');
+                  const fitStatus = getStaticStatus(vehicle.vehicleNumber + 'FIT');
 
-                return (
-                  <tr key={vehicle._id} className="hover:bg-gray-800 text-xs" style={{ height: rowHeight + 'px' }}>
-                      <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">{vehicle.vehicleNumber}</td>
-                      <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">{vehicle.vehicleType}</td>
-                      <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">
+                  return (
+                    <tr key={vehicle._id} className="border-b border-gray-800 hover:bg-gray-800">
+                      <td className="px-4 py-3 text-gray-300">{vehicle.vehicleNumber}</td>
+                      <td className="px-4 py-3 text-gray-300">{vehicle.vehicleType}</td>
+                      <td className="px-4 py-3 text-gray-300">
                         {(() => {
                           if (status === 'available') {
                             const allTrips = trips[vehicle.vehicleNumber] || [];
@@ -751,7 +753,7 @@ export default function SXLPage() {
                         })()}
                       </td>
                       {status === 'in-transit' && (
-                        <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">
+                        <td className="px-4 py-3 text-gray-300">
                           {(() => {
                             const allTrips = trips[vehicle.vehicleNumber] || [];
                             const inTransitTrip = allTrips.find(t => t.status === 'in-transit');
@@ -759,8 +761,8 @@ export default function SXLPage() {
                           })()}
                         </td>
                       )}
-                      <td className="px-2 py-1 whitespace-nowrap min-w-[60px]">
-                        <span className={`font-semibold text-white px-2 py-1 rounded ${
+                      <td className="px-4 py-3">
+                        <span className={`inline-block px-2 py-1 rounded text-center min-w-[60px] text-white ${
                           vehicle.waypoint?.haltingHours && vehicle.waypoint.haltingHours >= 7
                             ? 'bg-red-600 blink-bg'
                             : 'bg-green-600'
@@ -776,44 +778,32 @@ export default function SXLPage() {
                           })()}
                         </span>
                       </td>
-                    {!isAvailableTable && (
-                        <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">{pendingDistance}</td>
-                    )}
-                    <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">
-                      <span className="flex items-center gap-1">
-                        {inStatus.color}
-                      </span>
-                    </td>
-                    <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">
-                      <span className="flex items-center gap-1">
-                        {spStatus.color}
-                      </span>
-                    </td>
-                    <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">
-                      <span className="flex items-center gap-1">
-                        {npStatus.color}
-                      </span>
-                    </td>
-                    <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">
-                      <span className="flex items-center gap-1">
-                        {pucStatus.color}
-                      </span>
-                    </td>
-                    <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">
-                      <span className="flex items-center gap-1">
-                        {dleStatus.color}
-                      </span>
-                    </td>
-                    <td className="px-2 py-1 text-gray-300 whitespace-nowrap min-w-[60px]">
-                      <span className="flex items-center gap-1">
-                        {fitStatus.color}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      {!isAvailableTable && (
+                        <td className="px-4 py-3 text-gray-300">{pendingDistance}</td>
+                      )}
+                      <td className="px-4 py-3 text-center">
+                        <div className="inline-block w-3 h-3 rounded-full bg-green-500"></div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="inline-block w-3 h-3 rounded-full bg-green-500"></div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="inline-block w-3 h-3 rounded-full bg-green-500"></div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="inline-block w-3 h-3 rounded-full bg-green-500"></div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="inline-block w-3 h-3 rounded-full bg-green-500"></div>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <div className="inline-block w-3 h-3 rounded-full bg-green-500"></div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -932,7 +922,7 @@ export default function SXLPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-black">
+      <div className="flex h-screen bg-white">
         <main className="flex-1 p-8">
           <div className="flex items-center justify-center h-full">
             <Loading />
@@ -944,10 +934,10 @@ export default function SXLPage() {
 
   if (error) {
     return (
-      <div className="flex h-screen bg-black">
+      <div className="flex h-screen bg-white">
         <main className="flex-1 p-8">
           <div className="flex items-center justify-center h-full">
-            <div className="text-xl text-red-400">{error}</div>
+            <div className="text-xl text-red-600">{error}</div>
           </div>
         </main>
       </div>
@@ -955,10 +945,10 @@ export default function SXLPage() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-black">
-      <div className="flex bg-black min-h-screen">
-        <main className="flex-1 p-4">
-          <div className="mb-4">
+    <div className="min-h-screen w-full bg-gray-900">
+      <div className="flex bg-gray-900 min-h-screen">
+        <main className="flex-1 p-6">
+          <div className="mb-6">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center">
                 <Logo />
@@ -977,13 +967,13 @@ export default function SXLPage() {
                     placeholder="Filter by place..."
                     value={placeFilter}
                     onChange={(e) => setPlaceFilter(e.target.value)}
-                    className="px-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:border-red-500"
+                    className="input-field"
                   />
                 </div>
                 <Button
                   variant="primary"
                   onClick={handleDownloadExcel}
-                  className="flex items-center gap-2"
+                  className="btn-primary flex items-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -994,61 +984,69 @@ export default function SXLPage() {
             </div>
           </div>
 
-          <div className="flex flex-nowrap overflow-x-auto gap-2 items-start">
-            <div className="flex-shrink-0 min-w-[350px]">{renderVehicleTable(
+          <div className="flex flex-nowrap overflow-x-auto gap-4 items-start">
+            <div className="flex-shrink-0 min-w-[500px]">{renderVehicleTable(
               'available',
               'Available Vehicles',
               filteredVehicles.filter(v => v.currentTripStatus === 'available'),
               tableRowHeight,
               tableFontSize
             )}</div>
-            <div className="flex-shrink-0 min-w-[350px]">{renderVehicleTable(
+            <div className="flex-shrink-0 min-w-[500px]">{renderVehicleTable(
               'at-unloading',
               'At Unloading Vehicles',
               filteredVehicles.filter(v => v.currentTripStatus === 'at-unloading'),
               tableRowHeight,
               tableFontSize
             )}</div>
-            <div className="flex-shrink-0 min-w-[350px]">{renderVehicleTable(
+            <div className="flex-shrink-0 min-w-[500px]">{renderVehicleTable(
               'in-transit',
               'In Transit Vehicles',
               filteredVehicles.filter(v => v.currentTripStatus === 'in-transit'),
               tableRowHeight,
               tableFontSize
             )}</div>
-            <div className="flex-shrink-0 min-w-[350px] flex flex-col gap-2">
-              {renderVehicleTable(
-                'empty-movement',
-                'Empty Movement Vehicles',
-                filteredVehicles.filter(v => v.currentTripStatus === 'empty-movement'),
-                tableRowHeight,
-                tableFontSize
-              )}
-              {renderVehicleTable(
-                'off-duty',
-                'Off Duty Vehicles',
-                filteredVehicles.filter(v => v.currentTripStatus === 'off-duty'),
-                tableRowHeight,
-                tableFontSize
-              )}
+            <div className="flex-shrink-0 min-w-[500px] flex flex-col gap-4">
+              <div>
+                {renderVehicleTable(
+                  'empty-movement',
+                  'Empty Movement Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'empty-movement'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
+              <div>
+                {renderVehicleTable(
+                  'off-duty',
+                  'Off Duty Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'off-duty'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
             </div>
-            <div className="flex-shrink-0 min-w-[350px] flex flex-col gap-2">
-              {renderVehicleTable(
-                'at-pickup',
-                'At Pickup Vehicles',
-                filteredVehicles.filter(v => v.currentTripStatus === 'at-pickup'),
-                tableRowHeight,
-                tableFontSize
-              )}
-              {renderVehicleTable(
-                'enroute-for-pickup',
-                'Enroute for Pickup',
-                filteredVehicles.filter(v => v.currentTripStatus === 'enroute-for-pickup'),
-                tableRowHeight,
-                tableFontSize
-              )}
+            <div className="flex-shrink-0 min-w-[500px] flex flex-col gap-4">
+              <div>
+                {renderVehicleTable(
+                  'at-pickup',
+                  'At Pickup Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'at-pickup'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
+              <div>
+                {renderVehicleTable(
+                  'enroute-for-pickup',
+                  'Enroute for Pickup',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'enroute-for-pickup'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
             </div>
-            <div className="flex-shrink-0 min-w-[350px]">{renderVehicleTable(
+            <div className="flex-shrink-0 min-w-[500px]">{renderVehicleTable(
               'maintenance',
               'Maintenance Vehicles',
               filteredVehicles.filter(v => v.currentTripStatus === 'maintenance'),

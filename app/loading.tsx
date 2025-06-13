@@ -3,9 +3,9 @@ import ClipLoader from 'react-spinners/ClipLoader';
 
 function Loading() {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-[#1a1c1e]">
-      <div className="flex flex-col items-center">
-        <div className="relative">
+    <div className="">
+      <div className="">
+        <div className="">
           <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-red-500 to-red-600 opacity-20 blur"></div>
           <div className="relative rounded-lg bg-[#1f2123] p-8 shadow-xl">
             <ClipLoader color="#dc2626" size={40} />

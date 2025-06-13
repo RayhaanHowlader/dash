@@ -8,6 +8,7 @@ interface MongooseCache {
 
 // Declare the global mongoose property
 declare global {
+  // eslint-disable-next-line no-var
   var mongoose: MongooseCache | undefined;
 }
 
@@ -31,82 +32,23 @@ export async function connectToMongoDatabase() {
   }
 
   if (!cached.promise) {
-    const opts = {
+    cached.promise = mongoose.connect(MONGODB_URI as string, {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 30000,
-      socketTimeoutMS: 60000,
-      connectTimeoutMS: 30000,
-      maxPoolSize: 3,
-      minPoolSize: 1,
-      maxIdleTimeMS: 60000,
-      heartbeatFrequencyMS: 5000,
-      retryWrites: true,
-      retryReads: true,
-      w: 1 as const,
-      wtimeoutMS: 5000,
-      family: 4,
-      monitorCommands: true,
-      maxConnecting: 2,
-      waitQueueTimeoutMS: 30000,
-      compressors: ['zlib' as const],
-      zlibCompressionLevel: 6 as const,
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI!, opts)
-      .then((mongoose) => {
-        // Add connection event handlers
-        mongoose.connection.on('error', (err) => {
-          console.error('MongoDB connection error:', err);
-          cached.conn = null;
-          cached.promise = null;
-        });
-
-        mongoose.connection.on('disconnected', () => {
-          console.log('MongoDB disconnected');
-          cached.conn = null;
-          cached.promise = null;
-        });
-
-        mongoose.connection.on('reconnected', () => {
-          console.log('MongoDB reconnected');
-        });
-
-        // Monitor connection state
-        mongoose.connection.on('connected', () => {
-          console.log('MongoDB connected');
-        });
-
-        mongoose.connection.on('connecting', () => {
-          console.log('MongoDB connecting...');
-        });
-
-        // Handle process termination
-        process.on('SIGINT', async () => {
-          try {
-            await mongoose.connection.close();
-            console.log('MongoDB connection closed through app termination');
-            process.exit(0);
-          } catch (err) {
-            console.error('Error during MongoDB disconnection:', err);
-            process.exit(1);
-          }
-        });
-
-        return mongoose;
-      })
-      .catch((error) => {
-        cached.promise = null;
-        console.error('MongoDB connection error:', error);
-        throw error;
-      });
+    }).then((mongoose) => {
+      return mongoose;
+    });
   }
 
   try {
     cached.conn = await cached.promise;
+    // Optional: log only once
+    if (!process.env.SUPPRESS_MONGO_LOG) {
+      console.log('MongoDB connected');
+    }
   } catch (e) {
     cached.promise = null;
     throw e;
   }
 
   return cached.conn;
-} 
+}
