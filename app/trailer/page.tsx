@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fadeIn, staggerContainer, slideIn } from '../../utils/motion';
 import Logo from '../../components/Logo';
 import { IBM_Plex_Sans, Montserrat } from 'next/font/google';
+import VehicleDetailsModal from '../../components/VehicleDetailsModal';
 
 interface Vehicle {
   _id: string;
@@ -81,98 +82,6 @@ interface VehicleDocument {
   fitnessExpiry: string | null;
 }
 
-const VehicleDetailsModal = ({ vehicle, onClose }: VehicleDetailsModalProps) => {
-  if (!vehicle) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-[#2d2d2d] rounded-lg shadow-xl w-full max-w-2xl mx-4">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-white">Vehicle Details</h2>
-            <Button
-              variant="ghost"
-              onClick={onClose}
-              className="text-gray-400 hover:text-white"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-gray-400 text-sm">Vehicle Number</h3>
-                <p className="text-white text-lg font-medium">{vehicle.vehicleNumber}</p>
-              </div>
-              <div>
-                <h3 className="text-gray-400 text-sm">Vehicle Type</h3>
-                <p className="text-white text-lg font-medium">{vehicle.vehicleType}</p>
-              </div>
-              <div>
-                <h3 className="text-gray-400 text-sm">Current Status</h3>
-                <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
-                  vehicle.currentTripStatus === 'in-transit' 
-                    ? 'bg-green-500/10 text-green-500' 
-                    : vehicle.currentTripStatus === 'maintenance'
-                      ? 'bg-red-500/10 text-red-500'
-                      : vehicle.currentTripStatus === 'available'
-                        ? 'bg-blue-500/10 text-blue-500'
-                        : 'bg-gray-500/10 text-gray-400'
-                }`}>
-                  {vehicle.currentTripStatus}
-                </span>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-gray-400 text-sm">Created At</h3>
-                <p className="text-white text-lg font-medium">
-                  {new Date(vehicle.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-gray-400 text-sm">Last Updated</h3>
-                <p className="text-white text-lg font-medium">
-                  {new Date(vehicle.updatedAt).toLocaleString()}
-                </p>
-              </div>
-              {vehicle.haltingHours !== undefined && (
-                <div>
-                  <h3 className="text-gray-400 text-sm">Halting Hrs</h3>
-                  <p className="text-white text-lg font-medium">
-                    {vehicle.haltingHours} hours
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-8 flex justify-end">
-            <Button variant="primary" onClick={onClose}>
-              Close
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Add blink animation style
-<style jsx global>{`
-@keyframes blink-bg {
-  0%, 100% { background-color: #dc2626; }
-  50% { background-color: #7f1d1d; }
-}
-.blink-bg {
-  animation: blink-bg 1s steps(2, start) infinite;
-}
-`}</style>
-
 const ibmPlexSans = IBM_Plex_Sans({
   weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
@@ -212,7 +121,7 @@ const getVehiclePlace = (vehicle: Vehicle, status: string, trips: { [key: string
   } else if (status === 'in-transit') {
     return vehicle.waypoint?.name || '-';
   } else if (status === 'at-unloading') {
-    return latestTrip?.destination?.name || '-';
+    return vehicle.waypoint?.name || '-';
   } else if (status === 'at-pickup') {
     return latestTrip?.origin?.name || '-';
   } else if (status === 'off-duty') {
@@ -283,6 +192,9 @@ export default function TrailerPage() {
   const [tableRowHeight, setTableRowHeight] = useState(32);
   const [vehicleDocuments, setVehicleDocuments] = useState<{ [key: string]: VehicleDocument }>({});
   const [placeFilter, setPlaceFilter] = useState('');
+  const [latestRemark, setLatestRemark] = useState<string | null>(null);
+  const [latestRemarkUserName, setLatestRemarkUserName] = useState<string | null>(null);
+  const [latestRemarkUserRole, setLatestRemarkUserRole] = useState<string | null>(null);
 
   const fetchVehicles = async (isRefresh = false) => {
       try {
@@ -540,6 +452,29 @@ export default function TrailerPage() {
     });
   };
 
+  const handleViewDetails = async (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setLatestRemark(null); // Clear previous remark
+    try {
+      const response = await fetch(`/api/fleet-remarks?fleetId=${vehicle._id}`);
+      const result = await response.json();
+      if (result.status === 'success' && result.data.remark) {
+        setLatestRemark(result.data.remark);
+        setLatestRemarkUserName(result.data.userName);
+        setLatestRemarkUserRole(result.data.userRole);
+      } else {
+        setLatestRemark('No remark available.');
+        setLatestRemarkUserName(null);
+        setLatestRemarkUserRole(null);
+      }
+    } catch (error) {
+      console.error('Error fetching remark:', error);
+      setLatestRemark('Failed to load remark.');
+      setLatestRemarkUserName(null);
+      setLatestRemarkUserRole(null);
+    }
+  };
+
   const renderVehicleTable = (status: string, title: string, vehicles: Vehicle[], rowHeight: number, fontSize: number) => {
     const isAvailableTable = status === 'available';
     const sortedVehicles = sortVehiclesByHaltingHours(vehicles);
@@ -633,7 +568,11 @@ export default function TrailerPage() {
                 }
 
                 return (
-                  <tr key={vehicle._id} className="hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200">
+                  <tr 
+                    key={vehicle._id}
+                    onClick={() => handleViewDetails(vehicle)} 
+                    className="hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200 cursor-pointer"
+                  >
                     <td className="col-vehicle-number font-medium text-white">{vehicle.vehicleNumber}</td>
                     <td className="col-type">{vehicle.vehicleType}</td>
                     <td className="col-place truncate">
@@ -711,7 +650,7 @@ export default function TrailerPage() {
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loading />
-            <p className="text-gray-400 mt-4">Loading vehicle data... {loadProgress}%</p>
+            {/* <p className="text-gray-400 mt-4">Loading vehicle data... {loadProgress}%</p> */}
           </div>
         </main>
       </div>
@@ -883,6 +822,9 @@ export default function TrailerPage() {
           <VehicleDetailsModal 
             vehicle={selectedVehicle}
             onClose={() => setSelectedVehicle(null)}
+            remark={latestRemark}
+            userName={latestRemarkUserName}
+            userRole={latestRemarkUserRole}
           />
         )}
     </div>

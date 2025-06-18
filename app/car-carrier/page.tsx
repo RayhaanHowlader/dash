@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fadeIn, staggerContainer, slideIn } from '../../utils/motion';
 import Logo from '../../components/Logo';
 import { IBM_Plex_Sans, Montserrat } from 'next/font/google';
+import VehicleDetailsModal from '../../components/VehicleDetailsModal';
 
 const ibmPlexSans = IBM_Plex_Sans({
   weight: ['300', '400', '500', '600', '700'],
@@ -84,6 +85,9 @@ interface VehicleStats {
 interface VehicleDetailsModalProps {
   vehicle: Vehicle | null;
   onClose: () => void;
+  remark: string | null;
+  userName: string | null;
+  userRole: string | null;
 }
 
 interface VehicleDocument {
@@ -95,168 +99,6 @@ interface VehicleDocument {
   taxExpiry: string | null;
   lastUpdated: string;
 }
-
-const VehicleDetailsModal = ({ vehicle, onClose }: VehicleDetailsModalProps) => {
-  if (!vehicle) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-[#2d2d2d] rounded-lg shadow-xl w-full max-w-2xl mx-4">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-white">Vehicle Details</h2>
-            <Button
-              variant="ghost"
-              onClick={onClose}
-              className="text-gray-400 hover:text-white"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-gray-400 text-sm">Vehicle Number</h3>
-                <p className="text-white text-lg font-medium">{vehicle.vehicleNumber}</p>
-              </div>
-              <div>
-                <h3 className="text-gray-400 text-sm">Vehicle Type</h3>
-                <p className="text-white text-lg font-medium">{vehicle.vehicleType}</p>
-              </div>
-              <div>
-                <h3 className="text-gray-400 text-sm">Current Status</h3>
-                <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
-                  vehicle.currentTripStatus === 'in-transit' 
-                    ? 'bg-green-500/10 text-green-500' 
-                    : vehicle.currentTripStatus === 'maintenance'
-                      ? 'bg-red-500/10 text-red-500'
-                      : vehicle.currentTripStatus === 'available'
-                        ? 'bg-blue-500/10 text-blue-500'
-                        : 'bg-gray-500/10 text-gray-400'
-                }`}>
-                  {vehicle.currentTripStatus}
-                </span>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-gray-400 text-sm">Created At</h3>
-                <p className="text-white text-lg font-medium">
-                  {new Date(vehicle.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-gray-400 text-sm">Last Updated</h3>
-                <p className="text-white text-lg font-medium">
-                  {new Date(vehicle.updatedAt).toLocaleString()}
-                </p>
-              </div>
-              {vehicle.haltingHours !== undefined && (
-                <div>
-                  <h3 className="text-gray-400 text-sm">Halting Hrs</h3>
-                  <p className="text-white text-lg font-medium">
-                    {vehicle.haltingHours} hours
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-8 flex justify-end">
-            <Button variant="primary" onClick={onClose}>
-              Close
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-<style jsx global>{`
-@keyframes blink-bg {
-  0%, 100% { 
-    background-color: rgba(252, 66, 74, 0.4);
-    box-shadow: 0 0 15px rgba(252, 66, 74, 0.6);
-  }
-  50% { 
-    background-color: rgba(252, 66, 74, 0.2);
-    box-shadow: 0 0 5px rgba(252, 66, 74, 0.3);
-  }
-}
-.blink-bg {
-  animation: blink-bg 1.5s ease-in-out infinite;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-/* Custom animations for the dashboard */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(78, 84, 200, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 6px rgba(78, 84, 200, 0);
-  }
-}
-
-.btn-glow:hover {
-  animation: pulse-glow 1.5s infinite;
-}
-
-/* Enhanced glass effect for table rows */
-.dashboard-table tr {
-  transition: all 0.2s ease;
-}
-
-/* Subtle row hover animation */
-.dashboard-table tr:hover {
-  transform: translateY(-1px);
-}
-
-/* Subtle pulse for status indicators */
-@keyframes subtle-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.8; }
-}
-
-.status-circle-success {
-  animation: subtle-pulse 3s infinite;
-}
-
-/* Enhanced shadow for glass cards to create 3D effect */
-.glass-card {
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.25),
-    0 5px 15px rgba(0, 0, 0, 0.15);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.glass-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.3),
-    0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* Create depth with table shadow */
-.dashboard-table {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.status-circle-success {
-  color: #00d25b;
-}
-.status-circle-warning {
-  color: #ffab00;
-}
-.status-circle-danger {
-  color: #fc424a;
-}
-`}</style>
 
 const LoadingBar = ({ progress }: { progress: number }) => (
   <div className="fixed top-0 left-0 right-0 h-1 z-50">
@@ -320,7 +162,7 @@ const getVehiclePlace = (vehicle: Vehicle, status: string, trips: { [key: string
   } else if (status === 'in-transit') {
     return vehicle.waypoint?.name || '-';
   } else if (status === 'at-unloading') {
-    return latestTrip?.destination?.name || '-';
+    return vehicle?.waypoint?.name || '-';
   } else if (status === 'at-pickup') {
     return latestTrip?.origin?.name || '-';
   } else if (status === 'off-duty') {
@@ -369,6 +211,9 @@ export default function CAR_CARRIERPage() {
   const [tableRowHeight, setTableRowHeight] = useState(32);
   const [placeFilter, setPlaceFilter] = useState('');
   const [vehicleDocuments, setVehicleDocuments] = useState<{ [key: string]: VehicleDocument }>({});
+  const [latestRemark, setLatestRemark] = useState<string | null>(null);
+  const [latestRemarkUserName, setLatestRemarkUserName] = useState<string | null>(null);
+  const [latestRemarkUserRole, setLatestRemarkUserRole] = useState<string | null>(null);
 
   const memoizedFilteredVehicles = React.useMemo(() => {
     let filtered = vehicles;
@@ -470,7 +315,11 @@ export default function CAR_CARRIERPage() {
                   haltHoursClass = 'halt-hours-medium';
                 }
                 return (
-                  <tr key={vehicle._id} className="hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200">
+                  <tr 
+                    key={vehicle._id} 
+                    onClick={() => handleViewDetails(vehicle)}
+                    className="hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200 cursor-pointer"
+                  >
                     <td className="col-vehicle-number font-medium text-white">{vehicle.vehicleNumber}</td>
                     <td className="col-type">{vehicle.vehicleType}</td>
                     <td className="col-place truncate">{getVehiclePlace(vehicle, status, trips)}</td>
@@ -681,8 +530,27 @@ export default function CAR_CARRIERPage() {
     }
   };
 
-  const handleViewDetails = (vehicle: Vehicle) => {
+  const handleViewDetails = async (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
+    setLatestRemark(null); // Clear previous remark
+    try {
+      const response = await fetch(`/api/fleet-remarks?fleetId=${vehicle._id}`);
+      const result = await response.json();
+      if (result.status === 'success' && result.data.remark) {
+        setLatestRemark(result.data.remark);
+        setLatestRemarkUserName(result.data.userName);
+        setLatestRemarkUserRole(result.data.userRole);
+      } else {
+        setLatestRemark('No remark available.');
+        setLatestRemarkUserName(null);
+        setLatestRemarkUserRole(null);
+      }
+    } catch (error) {
+      console.error('Error fetching remark:', error);
+      setLatestRemark('Failed to load remark.');
+      setLatestRemarkUserName(null);
+      setLatestRemarkUserRole(null);
+    }
   };
 
   const handleExport = (data: Vehicle[], title: string) => {
@@ -844,7 +712,7 @@ export default function CAR_CARRIERPage() {
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loading />
-            <p className="text-gray-400 mt-4">Loading vehicle data... {loadProgress}%</p>
+            {/* <p className="text-red-400 mt-4">Loading vehicle data... {loadProgress}%</p> */}
           </div>
         </main>
       </div>
@@ -1071,6 +939,9 @@ export default function CAR_CARRIERPage() {
           <VehicleDetailsModal 
             vehicle={selectedVehicle}
             onClose={() => setSelectedVehicle(null)}
+            remark={latestRemark}
+            userName={latestRemarkUserName}
+            userRole={latestRemarkUserRole}
           />
         )}
     </div>

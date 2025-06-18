@@ -99,9 +99,12 @@ interface VehicleStats {
 interface VehicleDetailsModalProps {
   vehicle: Vehicle | null;
   onClose: () => void;
+  remark: string | null;
+  userName: string | null;
+  userRole: string | null;
 }
 
-const VehicleDetailsModal = ({ vehicle, onClose }: VehicleDetailsModalProps) => {
+const VehicleDetailsModal = ({ vehicle, onClose, remark, userName, userRole }: VehicleDetailsModalProps) => {
   if (!vehicle) return null;
 
   return (
@@ -151,20 +154,38 @@ const VehicleDetailsModal = ({ vehicle, onClose }: VehicleDetailsModalProps) => 
                   {vehicle.currentTripStatus}
                 </span>
               </div>
+              {remark && (
+                <div>
+                  <h3 className="text-gray-400 text-sm">Latest Remark</h3>
+                  <p className="text-white text-lg font-medium">{remark}</p>
+                </div>
+              )}
+              {userName && (
+                <div>
+                  <h3 className="text-gray-400 text-sm">Remark By</h3>
+                  <p className="text-white text-lg font-medium">{userName}</p>
+                </div>
+              )}
+              {userRole && (
+                <div>
+                  {/* <h3 className="text-gray-400 text-sm">User Role</h3>
+                  <p className="text-white text-lg font-medium">{userRole}</p> */}
+                </div>
+              )}
             </div>
             
             <div className="space-y-4 bg-white/5 p-4 rounded-lg backdrop-blur-md">
               <div>
-                <h3 className="text-gray-400 text-sm">Created At</h3>
+                {/* <h3 className="text-gray-400 text-sm">Created At</h3>
                 <p className="text-white text-lg font-medium">
                   {new Date(vehicle.createdAt).toLocaleString()}
-                </p>
+                </p> */}
               </div>
               <div>
-                <h3 className="text-gray-400 text-sm">Last Updated</h3>
+                {/* <h3 className="text-gray-400 text-sm">Last Updated</h3>
                 <p className="text-white text-lg font-medium">
                   {new Date(vehicle.updatedAt).toLocaleString()}
-                </p>
+                </p> */}
               </div>
               {vehicle.haltingHours !== undefined && (
                 <div>
@@ -208,6 +229,9 @@ export default function SXLPage() {
   // const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [latestRemark, setLatestRemark] = useState<string | null>(null);
+  const [latestRemarkUserName, setLatestRemarkUserName] = useState<string | null>(null);
+  const [latestRemarkUserRole, setLatestRemarkUserRole] = useState<string | null>(null);
   const [stats, setStats] = useState<VehicleStats>({ 
     total: 0, 
     available: 0,
@@ -446,7 +470,7 @@ export default function SXLPage() {
     } else if (status === 'in-transit') {
       return vehicle.waypoint?.name || '-';
     } else if (status === 'at-unloading') {
-      return trip && trip.destination && trip.destination.name ? trip.destination.name : '-';
+      return vehicle.waypoint?.name;
     } else if (status === 'at-pickup') {
       if (latestTrip?.origin?.name) {
         return latestTrip.origin.name;
@@ -532,8 +556,27 @@ export default function SXLPage() {
     }
   };
 
-  const handleViewDetails = (vehicle: Vehicle) => {
+  const handleViewDetails = async (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
+    setLatestRemark(null); // Clear previous remark
+    try {
+      const response = await fetch(`/api/fleet-remarks?fleetId=${vehicle._id}`);
+      const result = await response.json();
+      if (result.status === 'success' && result.data.remark) {
+        setLatestRemark(result.data.remark);
+        setLatestRemarkUserName(result.data.userName);
+        setLatestRemarkUserRole(result.data.userRole);
+      } else {
+        setLatestRemark('No remark available.');
+        setLatestRemarkUserName(null);
+        setLatestRemarkUserRole(null);
+      }
+    } catch (error) {
+      console.error('Error fetching remark:', error);
+      setLatestRemark('Failed to load remark.');
+      setLatestRemarkUserName(null);
+      setLatestRemarkUserRole(null);
+    }
   };
 
   const handleExport = (data: Vehicle[], title: string) => {
@@ -810,7 +853,11 @@ export default function SXLPage() {
                 }
 
                 return (
-                  <tr key={vehicle._id} className="hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200">
+                  <tr 
+                    key={vehicle._id} 
+                    onClick={() => handleViewDetails(vehicle)}
+                    className="hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200 cursor-pointer"
+                  >
                     <td className="col-vehicle-number font-medium text-white">{vehicle.vehicleNumber}</td>
                     <td className="col-type">{vehicle.vehicleType}</td>
                     <td className="col-place truncate">
@@ -827,9 +874,9 @@ export default function SXLPage() {
                     <td className="col-halt-hrs">
                       <span className={`status-badge ${haltHoursClass}`} style={{
                         backdropFilter: 'blur(8px)',
-                        background: hours >= 24 
+                        background: hours >= 7
                           ? 'rgba(252, 66, 74, 0.3)' 
-                          : hours >= 12 
+                          : hours >= 5
                             ? 'rgba(255, 171, 0, 0.3)' 
                             : 'rgba(0, 210, 91, 0.3)',
                         color: 'white',
@@ -902,7 +949,7 @@ export default function SXLPage() {
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Loading />
-            <p className="text-gray-400 mt-4">Loading vehicle data... {loadProgress}%</p>
+            {/* <p className="text-gray-400 mt-4">Loading vehicle data... {loadProgress}%</p> */}
           </div>
         </main>
       </div>
@@ -1208,6 +1255,9 @@ export default function SXLPage() {
           <VehicleDetailsModal 
             vehicle={selectedVehicle}
             onClose={() => setSelectedVehicle(null)}
+            remark={latestRemark}
+            userName={latestRemarkUserName}
+            userRole={latestRemarkUserRole}
           />
         )}
     </div>

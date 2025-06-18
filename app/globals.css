@@ -136,7 +136,7 @@ body {
 
 /* Table header with glass effect */
 .dashboard-table thead {
-  background: rgba(37, 37, 71, 0.3);
+  background: rgba(37, 37, 71, 0.2);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
