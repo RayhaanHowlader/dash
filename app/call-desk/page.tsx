@@ -126,48 +126,53 @@ function isAccident(problemIs: string | undefined) {
 }
 
 // Define the filtering function outside the component
-const getTicketsForCategoryAndVehicleType = (tickets: Ticket[], categoryKey: string, vehicleType: 'Loaded' | 'Empty') => {
-    const filteredByVehicleType = tickets.filter(ticket =>
-      vehicleType === 'Loaded'
-        ? (ticket.ticket?.vehicleStatusBot === 'Loadedvehicle' || ticket.ticket?.vehicleStatusBot === 'LoadedVehicle')
-        : (ticket.ticket?.vehicleStatusBot === 'EmptyVehicle' || ticket.ticket?.vehicleStatusBot === 'Emptyvehicle')
-    );
+const getTicketsForCategoryAndVehicleType = (
+  allTickets: Ticket[],
+  categoryKey: string, 
+  vehicleType: 'Loaded' | 'Empty'
+): Ticket[] => {
+  // First filter by vehicle type
+  const ticketsToFilter = allTickets.filter(ticket =>
+    vehicleType === 'Loaded'
+      ? (ticket.ticket?.vehicleStatusBot === 'Loadedvehicle' || ticket.ticket?.vehicleStatusBot === 'LoadedVehicle')
+      : (ticket.ticket?.vehicleStatusBot === 'EmptyVehicle' || ticket.ticket?.vehicleStatusBot === 'Emptyvehicle')
+  );
 
-    // Define the list of specific workshop categories
-    const specificWorkshops = ['Workshop-(Eicher)', 'Workshop-(Tata)', 'Workshop-(Ashok leyland)', 'Apml Workshop-PALWAL'];
+  // Define the list of specific workshop categories
+  const specificWorkshops = ['Workshop-(Eicher)', 'Workshop-(Tata)', 'Workshop-(Ashok leyland)', 'Apml Workshop-PALWAL'];
 
-    return filteredByVehicleType.filter(ticket => {
-      const workPlace = ticket.ticket?.workPlace;
-      const problemIs = ticket.ticket?.problemIs?.trim() || 'Other Issue/अन्य मुद्दे';
+  return ticketsToFilter.filter((ticket: Ticket) => {
+    const workPlace = ticket.ticket?.workPlace;
+    const problemIs = ticket.ticket?.problemIs?.trim() || 'Other Issue/अन्य मुद्दे';
 
-      // Explicitly check for specific workshop categories
-      if (specificWorkshops.includes(categoryKey)) {
-        return workPlace === categoryKey;
-      } else if (workPlace === 'Local' && ['Accident/एक्सीडेंट', 'Other Issue/अन्य मुद्दे', 'Battery/बैटरी', 'New Tyre/टायर की समस्या', 'TyrePuncher/टायर पंचर'].includes(categoryKey)) {
-        // Include Local tickets in the general categories based on problemIs
-        if (categoryKey === 'Accident/एक्सीडेंट') {
-            return isAccident(problemIs);
-        } else if (categoryKey === 'Other Issue/अन्य मुद्दे') {
-            return !isAccident(problemIs) && !['Battery/बैटरी', 'New Tyre/टायर की समस्या', 'TyrePuncher/टायर पंचर'].includes(problemIs);
-        } else { // Battery, New Tyre, Tyre Puncher
-            return problemIs === categoryKey;
-        }
-      } else if (['Accident/एक्सीडेंट', 'Other Issue/अन्य मुद्दे', 'Battery/बैटरी', 'New Tyre/टायर की समस्या', 'TyrePuncher/टायर पंचर'].includes(categoryKey)) {
-          // Include non-local, non-workshop tickets in the general categories based on problemIs
-          // Ensure tickets assigned to specific workshops are excluded from the general categories
-          if (!specificWorkshops.includes(workPlace || '')) { // Add this check
-              if (categoryKey === 'Accident/एक्सीडेंट') {
-                  return isAccident(problemIs);
-              } else if (categoryKey === 'Other Issue/अन्य मुद्दे') {
-                  return !isAccident(problemIs) && !['Battery/बैटरी', 'New Tyre/टायर की समस्या', 'TyrePuncher/टायर पंचर'].includes(problemIs);
-              } else { // Battery, New Tyre, Tyre Puncher
-                  return problemIs === categoryKey;
-              }
-          }
+    // Explicitly check for specific workshop categories
+    if (specificWorkshops.includes(categoryKey)) {
+      return workPlace === categoryKey;
+    } else if (workPlace === 'Local' && ['Accident/एक्सीडेंट', 'Other Issue/अन्य मुद्दे', 'Battery/बैटरी', 'New Tyre/टायर की समस्या', 'TyrePuncher/टायर पंचर'].includes(categoryKey)) {
+      // Include Local tickets in the general categories based on problemIs
+      if (categoryKey === 'Accident/एक्सीडेंट') {
+          return isAccident(problemIs);
+      } else if (categoryKey === 'Other Issue/अन्य मुद्दे') {
+          return !isAccident(problemIs) && !['Battery/बैटरी', 'New Tyre/टायर की समस्या', 'TyrePuncher/टायर पंचर'].includes(problemIs);
+      } else { // Battery, New Tyre, Tyre Puncher
+          return problemIs === categoryKey;
       }
+    } else if (['Accident/एक्सीडेंट', 'Other Issue/अन्य मुद्दे', 'Battery/बैटरी', 'New Tyre/टायर की समस्या', 'TyrePuncher/टायर पंचर'].includes(categoryKey)) {
+        // Include non-local, non-workshop tickets in the general categories based on problemIs
+        // Ensure tickets assigned to specific workshops are excluded from the general categories
+        if (!specificWorkshops.includes(workPlace || '')) {
+            if (categoryKey === 'Accident/एक्सीडेंट') {
+                return isAccident(problemIs);
+            } else if (categoryKey === 'Other Issue/अन्य मुद्दे') {
+                return !isAccident(problemIs) && !['Battery/बैटरी', 'New Tyre/टायर की समस्या', 'TyrePuncher/टायर पंचर'].includes(problemIs);
+            } else { // Battery, New Tyre, Tyre Puncher
+                return problemIs === categoryKey;
+            }
+        }
+    }
 
-      return false; // Should not reach here for defined categories
-    });
+    return false; // Should not reach here for defined categories
+  });
 };
 
 // Helper for SXL-like loading bar
@@ -458,6 +463,7 @@ export default function CallDeskPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
   const [placeFilter, setPlaceFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // List of work places for assignment
   const workPlaces = [
@@ -548,14 +554,27 @@ export default function CallDeskPage() {
 
   const filteredTicketsByPlace = React.useMemo(() => {
     let filtered = tickets;
+    
+    // Apply search filter first
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(ticket => {
+        const ticketId = ticket.ticketId?.toLowerCase() || '';
+        const vehicleNumber = ticket.ticket?.vehicleNumber?.toLowerCase() || '';
+        return ticketId.includes(query) || vehicleNumber.includes(query);
+      });
+    }
+    
+    // Then apply place filter
     if (placeFilter.trim() !== '') {
       filtered = filtered.filter(ticket => {
         const workPlace = ticket.ticket?.workPlace || '';
         return workPlace.toLowerCase().includes(placeFilter.toLowerCase());
       });
     }
+    
     return filtered;
-  }, [tickets, placeFilter]);
+  }, [tickets, placeFilter, searchQuery]);
 
   const loadedTickets = filteredTicketsByPlace.filter(
     ticket =>
@@ -782,16 +801,16 @@ export default function CallDeskPage() {
 
             <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
               <div className="relative w-full md:w-64">
-                {/* <div className="search-icon">
+                <div className="search-icon">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                </div> */}
-                {/* <input
+                </div>
+                <input
                   type="text"
-                  placeholder="Filter by work place..."
-                  value={placeFilter}
-                  onChange={(e) => setPlaceFilter(e.target.value)}
+                  placeholder="Search ticket or vehicle number..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="search-input"
                   style={{
                     backdropFilter: 'blur(12px)',
@@ -799,7 +818,7 @@ export default function CallDeskPage() {
                     border: '1px solid rgba(255, 255, 255, 0.12)',
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
                   }}
-                /> */}
+                />
               </div>
 
               <Button
@@ -829,233 +848,288 @@ export default function CallDeskPage() {
         </header>
 
         <div className="relative w-full">
-          <div className="content-grid flex flex-col gap-8" style={{
-            paddingTop: '10px',
-            paddingBottom: '20px'
-          }}>
-            <div className="flex-grow">
-              <div className="glass-card mb-6 overflow-hidden" style={{
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
-              }}>
-                <div className="glass-header p-4 flex items-center gap-3">
-                  <div className="bg-[rgba(255,255,255,0.15)] text-white font-bold h-10 w-10 flex items-center justify-center rounded-full">
-                    {loadedTickets.length}
+          {/* Scroll buttons */}
+          <button 
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-[rgba(30,30,47,0.6)] hover:bg-[rgba(42,42,94,0.7)] text-white p-2 rounded-r-lg backdrop-blur-lg border border-[rgba(255,255,255,0.1)]"
+            onClick={() => {
+              const container = document.querySelector('.content-grid');
+              if (container) {
+                container.scrollBy({ left: -350, behavior: 'smooth' });
+              }
+            }}
+            style={{
+              boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)'
+            }}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <button 
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-[rgba(30,30,47,0.6)] hover:bg-[rgba(42,42,94,0.7)] text-white p-2 rounded-l-lg backdrop-blur-lg border border-[rgba(255,255,255,0.1)]"
+            onClick={() => {
+              const container = document.querySelector('.content-grid');
+              if (container) {
+                container.scrollBy({ left: 350, behavior: 'smooth' });
+              }
+            }}
+            style={{
+              boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)'
+            }}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          <div className="horizontal-scroll-fix">
+            <div className="content-grid" style={{
+              paddingTop: '10px',
+              paddingBottom: '20px',
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'nowrap',
+              gap: '20px',
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              width: 'max-content',
+              minWidth: '100%',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'thin',
+              msOverflowStyle: '-ms-autohiding-scrollbar',
+              cursor: 'grab'
+            }}>
+              {/* Loaded Vehicles Section */}
+              <div className="flex-shrink-0" style={{ width: '950px', marginRight: '20px' }}>
+                <div className="glass-card mb-6 overflow-hidden" style={{
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
+                }}>
+                  <div className="glass-header p-4 flex items-center gap-3">
+                    <div className="bg-[rgba(255,255,255,0.15)] text-white font-bold h-10 w-10 flex items-center justify-center rounded-full">
+                      {loadedTickets.length}
+                    </div>
+                    <h2 className="text-xl font-bold text-green-500 tracking-wide">Loaded Vehicles</h2>
                   </div>
-                  <h2 className="text-xl font-bold text-green-500 tracking-wide">Loaded Vehicles</h2>
-                </div>
 
-                {
-                  [
-                    { key: 'Other Issue/अन्य मुद्दे', label: 'Incoming issue/Other issue' },
-                    { key: 'Accident/एक्सीडेंट', label: 'Accident' },
-                    { key: 'Battery/बैटरी', label: 'Battery' },
-                    { key: 'Workshop-(Eicher)', label: 'Eicher' },
-                    { key: 'Workshop-(Tata)', label: 'Tata' },
-                    { key: 'Workshop-(Ashok leyland)', label: 'Ashok Leyland' },
-                    { key: 'New Tyre/टायर की समस्या', label: 'Tyre new' },
-                    { key: 'TyrePuncher/टायर पंचर', label: 'Tyre Puncher' },
-                    { key: 'Apml Workshop-PALWAL', label: 'Apml Workshop-PALWAL' }
-                  ].map(({ key: categoryKey, label: categoryLabel }) => {
-                    const categoryTickets = getTicketsForCategoryAndVehicleType(tickets, categoryKey, 'Loaded');
+                  {
+                    [
+                      { key: 'Other Issue/अन्य मुद्दे', label: 'Incoming issue/Other issue' },
+                      { key: 'Accident/एक्सीडेंट', label: 'Accident' },
+                      { key: 'Battery/बैटरी', label: 'Battery' },
+                      { key: 'Workshop-(Eicher)', label: 'Eicher' },
+                      { key: 'Workshop-(Tata)', label: 'Tata' },
+                      { key: 'Workshop-(Ashok leyland)', label: 'Ashok Leyland' },
+                      { key: 'New Tyre/टायर की समस्या', label: 'Tyre new' },
+                      { key: 'TyrePuncher/टायर पंचर', label: 'Tyre Puncher' },
+                      { key: 'Apml Workshop-PALWAL', label: 'Apml Workshop-PALWAL' }
+                    ].map(({ key: categoryKey, label: categoryLabel }) => {
+                      const categoryTickets = getTicketsForCategoryAndVehicleType(filteredTicketsByPlace, categoryKey, 'Loaded');
 
-                    categoryTickets.sort((a, b) => {
-                      const aUnattended = isUnattended(a);
-                      const bUnattended = isUnattended(b);
-                      if (aUnattended && !bUnattended) return -1;
-                      if (!aUnattended && bUnattended) return 1;
-                      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-                    });
+                      categoryTickets.sort((a: Ticket, b: Ticket) => {
+                        const aUnattended = isUnattended(a);
+                        const bUnattended = isUnattended(b);
+                        if (aUnattended && !bUnattended) return -1;
+                        if (!aUnattended && bUnattended) return 1;
+                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                      });
 
-                    return (
-                      <div key={categoryKey} className="mb-6">
-                        <div className="p-4 bg-gray-700/30 flex items-center border-b border-gray-600">
-                          <h4 className="text-md font-medium text-white mr-3">{categoryLabel}</h4>
-                          <span className="text-sm text-gray-300 bg-gray-700 px-3 py-1 rounded-full">{categoryTickets.length}</span>
-                        </div>
+                      return (
+                        <div key={categoryKey} className="mb-6">
+                          <div className="p-4 bg-gray-700/30 flex items-center border-b border-gray-600">
+                            <h4 className="text-md font-medium text-white mr-3">{categoryLabel}</h4>
+                            <span className="text-sm text-gray-300 bg-gray-700 px-3 py-1 rounded-full">{categoryTickets.length}</span>
+                          </div>
 
-                        <div className="table-container glass-card bg-gray-800 rounded-lg border border-gray-700">
-                          <table className="dashboard-table" style={{tableLayout: 'fixed'}}>
-                            <thead>
-                              <tr className="bg-gray-900 text-xs border-b border-gray-700">
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '22%'}}>TICKET NUMBER</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '10%'}}>STATUS</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>VEHICLE NUMBER</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>WORK PLACE</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '18%'}}>DESCRIPTION</th>
-                                <th className="px-4 py-3 " style={{width: '16%'}}>TIME UP</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-700">
-                              {categoryTickets.length > 0 ? (
-                                categoryTickets.map((ticket: Ticket) => (
-                                  <tr key={ticket._id} className={`ticket-row text-xs${(ticket.ticketId === latestTicketId) ? ' bg-blue-900/30' : ''}`}>
-                                    <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
-                                      <div className="flex flex-col gap-1">
-                                        <span className="font-medium">{ticket.ticketId}</span>
-                                      </div>
-                                    </td>
-                                    <td className="px-4 py-2 text-center" style={{whiteSpace: 'nowrap'}}>
-                                      <span
-                                        className={
-                                          isUnattended(ticket)
-                                            ? 'animate-blink'
-                                            : ticket.ticketId === latestTicketId
-                                              ? 'animate-blink-latest'
-                                              : ''
-                                        }
-                                        data-tooltip={ticket.ticket?.currentStatus || ticket.status}
-                                        style={{ fontSize: '1.3rem', display: 'inline-block' }}
-                                      >
-                                        {getStatusEmoji(ticket.ticket?.currentStatus || ticket.status)}
-                                      </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
-                                      {ticket.ticket?.vehicleNumber || '-'}
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
-                                      {ticket.ticket?.workPlace || '-'}
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-300 description-cell">
-                                      <span
-                                        className="description-label"
-                                        tabIndex={0}
-                                        data-tooltip={descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
-                                        title={descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
-                                      >
-                                        {descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
-                                      </span>
-                                    </td>
-                                    <td className="px-4 py-3 font-mono time-up" style={{whiteSpace: 'nowrap'}}>{formatTimeUp(ticket.createdAt, now)}</td>
-                                  </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td colSpan={6} className="p-4 text-center text-gray-400">
-                                    No tickets in this category for loaded vehicles
-                                  </td>
+                          <div className="table-container glass-card bg-gray-800 rounded-lg border border-gray-700">
+                            <table className="dashboard-table" style={{tableLayout: 'fixed'}}>
+                              <thead>
+                                <tr className="bg-gray-900 text-xs border-b border-gray-700">
+                                  <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '22%'}}>TICKET NUMBER</th>
+                                  <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '10%'}}>STATUS</th>
+                                  <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>VEHICLE NUMBER</th>
+                                  <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>WORK PLACE</th>
+                                  <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '18%'}}>DESCRIPTION</th>
+                                  <th className="px-4 py-3 " style={{width: '16%'}}>TIME UP</th>
                                 </tr>
-                              )}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody className="divide-y divide-gray-700">
+                                {categoryTickets.length > 0 ? (
+                                  categoryTickets.map((ticket: Ticket) => (
+                                    <tr key={ticket._id} className={`ticket-row text-xs${(ticket.ticketId === latestTicketId) ? ' bg-blue-900/30' : ''}`}>
+                                      <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
+                                        <div className="flex flex-col gap-1">
+                                          <span className="font-medium">{ticket.ticketId}</span>
+                                        </div>
+                                      </td>
+                                      <td className="px-4 py-2 text-center" style={{whiteSpace: 'nowrap'}}>
+                                        <span
+                                          className={
+                                            isUnattended(ticket)
+                                              ? 'animate-blink'
+                                              : ticket.ticketId === latestTicketId
+                                                ? 'animate-blink-latest'
+                                                : ''
+                                          }
+                                          data-tooltip={ticket.ticket?.currentStatus || ticket.status}
+                                          style={{ fontSize: '1.3rem', display: 'inline-block' }}
+                                        >
+                                          {getStatusEmoji(ticket.ticket?.currentStatus || ticket.status)}
+                                        </span>
+                                      </td>
+                                      <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
+                                        {ticket.ticket?.vehicleNumber || '-'}
+                                      </td>
+                                      <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
+                                        {ticket.ticket?.workPlace || '-'}
+                                      </td>
+                                      <td className="px-4 py-3 text-gray-300 description-cell">
+                                        <span
+                                          className="description-label"
+                                          tabIndex={0}
+                                          data-tooltip={descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
+                                          title={descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
+                                        >
+                                          {descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
+                                        </span>
+                                      </td>
+                                      <td className="px-4 py-3 font-mono time-up" style={{whiteSpace: 'nowrap'}}>{formatTimeUp(ticket.createdAt, now)}</td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={6} className="p-4 text-center text-gray-400">
+                                      No tickets in this category for loaded vehicles
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })
-                }
+                      );
+                    })
+                  }
 
+                </div>
               </div>
-            </div>
 
-            <div className="flex-grow">
-              <div className="glass-card mb-6 overflow-hidden" style={{
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
-              }}>
-                <div className="glass-header p-4 flex items-center gap-3">
-                  <div className="bg-[rgba(255,255,255,0.15)] text-white font-bold h-10 w-10 flex items-center justify-center rounded-full">
-                    {emptyTickets.length}
+              {/* Empty Vehicles Section */}
+              <div className="flex-shrink-0" style={{ width: '950px', marginRight: '20px' }}>
+                <div className="glass-card mb-6 overflow-hidden" style={{
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
+                }}>
+                  <div className="glass-header p-4 flex items-center gap-3">
+                    <div className="bg-[rgba(255,255,255,0.15)] text-white font-bold h-10 w-10 flex items-center justify-center rounded-full">
+                      {emptyTickets.length}
+                    </div>
+                    <h2 className="text-xl font-bold text-green-500 tracking-wide">Empty Vehicles</h2>
                   </div>
-                  <h2 className="text-xl font-bold text-green-500 tracking-wide">Empty Vehicles</h2>
-                </div>
 
-                {
-                  [
-                    { key: 'Other Issue/अन्य मुद्दे', label: 'Incoming issue/Other issue' },
-                    { key: 'Accident/एक्सीडेंट', label: 'Accident' },
-                    { key: 'Battery/बैटरी', label: 'Battery' },
-                    { key: 'Workshop-(Eicher)', label: 'Eicher' },
-                    { key: 'Workshop-(Tata)', label: 'Tata' },
-                    { key: 'Workshop-(Ashok leyland)', label: 'Ashok Leyland' },
-                    { key: 'New Tyre/टायर की समस्या', label: 'Tyre new' },
-                    { key: 'TyrePuncher/टायर पंचर', label: 'Tyre Puncher' },
-                    { key: 'Apml Workshop-PALWAL', label: 'Apml Workshop-PALWAL' }
-                  ].map(({ key: categoryKey, label: categoryLabel }) => {
-                    const categoryTickets = getTicketsForCategoryAndVehicleType(tickets, categoryKey, 'Empty');
+                  {
+                    [
+                      { key: 'Other Issue/अन्य मुद्दे', label: 'Incoming issue/Other issue' },
+                      { key: 'Accident/एक्सीडेंट', label: 'Accident' },
+                      { key: 'Battery/बैटरी', label: 'Battery' },
+                      { key: 'Workshop-(Eicher)', label: 'Eicher' },
+                      { key: 'Workshop-(Tata)', label: 'Tata' },
+                      { key: 'Workshop-(Ashok leyland)', label: 'Ashok Leyland' },
+                      { key: 'New Tyre/टायर की समस्या', label: 'Tyre new' },
+                      { key: 'TyrePuncher/टायर पंचर', label: 'Tyre Puncher' },
+                      { key: 'Apml Workshop-PALWAL', label: 'Apml Workshop-PALWAL' }
+                    ].map(({ key: categoryKey, label: categoryLabel }) => {
+                      const categoryTickets = getTicketsForCategoryAndVehicleType(filteredTicketsByPlace, categoryKey, 'Empty');
 
-                    categoryTickets.sort((a, b) => {
-                      const aUnattended = isUnattended(a);
-                      const bUnattended = isUnattended(b);
-                      if (aUnattended && !bUnattended) return -1;
-                      if (!aUnattended && bUnattended) return 1;
-                      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-                    });
+                      categoryTickets.sort((a: Ticket, b: Ticket) => {
+                        const aUnattended = isUnattended(a);
+                        const bUnattended = isUnattended(b);
+                        if (aUnattended && !bUnattended) return -1;
+                        if (!aUnattended && bUnattended) return 1;
+                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                      });
 
-                    return (
-                      <div key={categoryKey} className="mb-6">
-                        <div className="p-4 bg-gray-700/30 flex items-center border-b border-gray-600">
-                          <h4 className="text-md font-medium text-white mr-3">{categoryLabel}</h4>
-                          <span className="text-sm text-gray-300 bg-gray-700 px-3 py-1 rounded-full">{categoryTickets.length}</span>
-                        </div>
+                      return (
+                        <div key={categoryKey} className="mb-6">
+                          <div className="p-4 bg-gray-700/30 flex items-center border-b border-gray-600">
+                            <h4 className="text-md font-medium text-white mr-3">{categoryLabel}</h4>
+                            <span className="text-sm text-gray-300 bg-gray-700 px-3 py-1 rounded-full">{categoryTickets.length}</span>
+                          </div>
 
-                        <div className="table-container glass-card bg-gray-800 rounded-lg border border-gray-700">
-                          <table className="dashboard-table" style={{tableLayout: 'fixed'}}>
-                            <thead>
-                              <tr className="bg-gray-900 text-xs border-b border-gray-700">
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '22%'}}>TICKET NUMBER</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '10%'}}>STATUS</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>VEHICLE NUMBER</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>WORK PLACE</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '18%'}}>DESCRIPTION</th>
-                                <th className="px-4 py-3 " style={{width: '16%'}}>TIME UP</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-700">
-                              {categoryTickets.length > 0 ? (
-                                categoryTickets.map((ticket: Ticket) => (
-                                  <tr key={ticket._id} className={`ticket-row text-xs${(ticket.ticketId === latestTicketId) ? ' bg-blue-900/30' : ''}`}>
-                                    <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
-                                      <div className="flex flex-col gap-1">
-                                        <span className="font-medium">{ticket.ticketId}</span>
-                                      </div>
-                                    </td>
-                                    <td className="px-4 py-2 text-center" style={{whiteSpace: 'nowrap'}}>
-                                      <span
-                                        className={
-                                          isUnattended(ticket)
-                                            ? 'animate-blink'
-                                            : ticket.ticketId === latestTicketId
-                                              ? 'animate-blink-latest'
-                                              : ''
-                                        }
-                                        data-tooltip={ticket.ticket?.currentStatus || ticket.status}
-                                        style={{ fontSize: '1.3rem', display: 'inline-block' }}
-                                      >
-                                        {getStatusEmoji(ticket.ticket?.currentStatus || ticket.status)}
-                                      </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
-                                      {ticket.ticket?.vehicleNumber || '-'}
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
-                                      {ticket.ticket?.workPlace || '-'}
-                                    </td>
-                                    <td className="px-4 py-3 text-gray-300 description-cell">
-                                      <span
-                                        className="description-label"
-                                        tabIndex={0}
-                                        data-tooltip={descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
-                                        title={descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
-                                      >
-                                        {descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
-                                      </span>
-                                    </td>
-                                    <td className="px-4 py-3 font-mono time-up" style={{whiteSpace: 'nowrap'}}>{formatTimeUp(ticket.createdAt, now)}</td>
-                                  </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td colSpan={6} className="p-4 text-center text-gray-400">
-                                    No tickets in this category for empty vehicles
-                                  </td>
+                          <div className="table-container glass-card bg-gray-800 rounded-lg border border-gray-700">
+                            <table className="dashboard-table" style={{tableLayout: 'fixed'}}>
+                              <thead>
+                                <tr className="bg-gray-900 text-xs border-b border-gray-700">
+                                  <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '22%'}}>TICKET NUMBER</th>
+                                  <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '10%'}}>STATUS</th>
+                                  <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>VEHICLE NUMBER</th>
+                                  <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>WORK PLACE</th>
+                                  <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '18%'}}>DESCRIPTION</th>
+                                  <th className="px-4 py-3 " style={{width: '16%'}}>TIME UP</th>
                                 </tr>
-                              )}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody className="divide-y divide-gray-700">
+                                {categoryTickets.length > 0 ? (
+                                  categoryTickets.map((ticket: Ticket) => (
+                                    <tr key={ticket._id} className={`ticket-row text-xs${(ticket.ticketId === latestTicketId) ? ' bg-blue-900/30' : ''}`}>
+                                      <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
+                                        <div className="flex flex-col gap-1">
+                                          <span className="font-medium">{ticket.ticketId}</span>
+                                        </div>
+                                      </td>
+                                      <td className="px-4 py-2 text-center" style={{whiteSpace: 'nowrap'}}>
+                                        <span
+                                          className={
+                                            isUnattended(ticket)
+                                              ? 'animate-blink'
+                                              : ticket.ticketId === latestTicketId
+                                                ? 'animate-blink-latest'
+                                                : ''
+                                          }
+                                          data-tooltip={ticket.ticket?.currentStatus || ticket.status}
+                                          style={{ fontSize: '1.3rem', display: 'inline-block' }}
+                                        >
+                                          {getStatusEmoji(ticket.ticket?.currentStatus || ticket.status)}
+                                        </span>
+                                      </td>
+                                      <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
+                                        {ticket.ticket?.vehicleNumber || '-'}
+                                      </td>
+                                      <td className="px-4 py-3 text-gray-300" style={{whiteSpace: 'nowrap'}}>
+                                        {ticket.ticket?.workPlace || '-'}
+                                      </td>
+                                      <td className="px-4 py-3 text-gray-300 description-cell">
+                                        <span
+                                          className="description-label"
+                                          tabIndex={0}
+                                          data-tooltip={descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
+                                          title={descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
+                                        >
+                                          {descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
+                                        </span>
+                                      </td>
+                                      <td className="px-4 py-3 font-mono time-up" style={{whiteSpace: 'nowrap'}}>{formatTimeUp(ticket.createdAt, now)}</td>
+                                    </tr>
+                                  ))
+                                ) : (
+                                  <tr>
+                                    <td colSpan={6} className="p-4 text-center text-gray-400">
+                                      No tickets in this category for empty vehicles
+                                    </td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })
-                }
+                      );
+                    })
+                  }
 
+                </div>
               </div>
             </div>
           </div>

@@ -808,83 +808,83 @@ export default function DoubleDeckerPage() {
                 cursor: 'grab'
               }}>
                 <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300" style={{ flex: '0 0 950px', minWidth: '950px', marginRight: '20px' }}>
-                  {renderVehicleTable(
-                    'available',
-                    'Available Vehicles',
-                    filteredVehicles.filter(v => v.currentTripStatus === 'available'),
-                    tableRowHeight,
-                    tableFontSize
-                  )}
-                </div>
+                {renderVehicleTable(
+                  'available',
+                  'Available Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'available'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
 
-                <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                  {renderVehicleTable(
-                    'at-unloading',
-                    'At Unloading Vehicles',
-                    filteredVehicles.filter(v => v.currentTripStatus === 'at-unloading'),
-                    tableRowHeight,
-                    tableFontSize
-                  )}
-                </div>
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'at-unloading',
+                  'At Unloading Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'at-unloading'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
 
-                <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                  {renderVehicleTable(
-                    'in-transit',
-                    'In Transit Vehicles',
-                    filteredVehicles.filter(v => v.currentTripStatus === 'in-transit'),
-                    tableRowHeight,
-                    tableFontSize
-                  )}
-                </div>
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'in-transit',
+                  'In Transit Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'in-transit'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
 
-                <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                  {renderVehicleTable(
-                    'empty-movement',
-                    'Empty Movement Vehicles',
-                    filteredVehicles.filter(v => v.currentTripStatus === 'empty-movement'),
-                    tableRowHeight,
-                    tableFontSize
-                  )}
-                </div>
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'empty-movement',
+                  'Empty Movement Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'empty-movement'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
 
-                <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                  {renderVehicleTable(
-                    'off-duty',
-                    'Off Duty Vehicles',
-                    filteredVehicles.filter(v => v.currentTripStatus === 'off-duty'),
-                    tableRowHeight,
-                    tableFontSize
-                  )}
-                </div>
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'off-duty',
+                  'Off Duty Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'off-duty'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
 
-                <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                  {renderVehicleTable(
-                    'at-pickup',
-                    'At Pickup Vehicles',
-                    filteredVehicles.filter(v => v.currentTripStatus === 'at-pickup'),
-                    tableRowHeight,
-                    tableFontSize
-                  )}
-                </div>
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'at-pickup',
+                  'At Pickup Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'at-pickup'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
 
-                <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                  {renderVehicleTable(
-                    'enroute-for-pickup',
-                    'Enroute for Pickup',
-                    filteredVehicles.filter(v => v.currentTripStatus === 'enroute-for-pickup'),
-                    tableRowHeight,
-                    tableFontSize
-                  )}
-                </div>
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'enroute-for-pickup',
+                  'Enroute for Pickup',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'enroute-for-pickup'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
 
-                <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                  {renderVehicleTable(
-                    'maintenance',
-                    'Maintenance Vehicles',
-                    filteredVehicles.filter(v => v.currentTripStatus === 'maintenance'),
-                    tableRowHeight,
-                    tableFontSize
-                  )}
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'maintenance',
+                  'Maintenance Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'maintenance'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
                 </div>
               </div>
             </div>
@@ -1109,83 +1109,83 @@ export default function DoubleDeckerPage() {
               cursor: 'grab'
             }}>
               <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300" style={{ flex: '0 0 950px', minWidth: '950px', marginRight: '20px' }}>
-                {renderVehicleTable(
-                  'available',
-                  'Available Vehicles',
-                  filteredVehicles.filter(v => v.currentTripStatus === 'available'),
-                  tableRowHeight,
-                  tableFontSize
-                )}
-              </div>
+              {renderVehicleTable(
+              'available',
+              'Available Vehicles',
+              filteredVehicles.filter(v => v.currentTripStatus === 'available'),
+              tableRowHeight,
+              tableFontSize
+              )}
+            </div>
 
-              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                {renderVehicleTable(
-                  'at-unloading',
-                  'At Unloading Vehicles',
-                  filteredVehicles.filter(v => v.currentTripStatus === 'at-unloading'),
-                  tableRowHeight,
-                  tableFontSize
-                )}
-              </div>
+            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+              {renderVehicleTable(
+              'at-unloading',
+              'At Unloading Vehicles',
+              filteredVehicles.filter(v => v.currentTripStatus === 'at-unloading'),
+              tableRowHeight,
+              tableFontSize
+              )}
+            </div>
 
-              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                {renderVehicleTable(
-                  'in-transit',
-                  'In Transit Vehicles',
-                  filteredVehicles.filter(v => v.currentTripStatus === 'in-transit'),
-                  tableRowHeight,
-                  tableFontSize
-                )}
-              </div>
+            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+              {renderVehicleTable(
+              'in-transit',
+              'In Transit Vehicles',
+              filteredVehicles.filter(v => v.currentTripStatus === 'in-transit'),
+              tableRowHeight,
+              tableFontSize
+              )}
+            </div>
 
-              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                {renderVehicleTable(
-                  'empty-movement',
-                  'Empty Movement Vehicles',
-                  filteredVehicles.filter(v => v.currentTripStatus === 'empty-movement'),
-                  tableRowHeight,
-                  tableFontSize
-                )}
-              </div>
+            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+              {renderVehicleTable(
+                'empty-movement',
+                'Empty Movement Vehicles',
+                filteredVehicles.filter(v => v.currentTripStatus === 'empty-movement'),
+                tableRowHeight,
+                tableFontSize
+              )}
+            </div>
 
-              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                {renderVehicleTable(
-                  'off-duty',
-                  'Off Duty Vehicles',
-                  filteredVehicles.filter(v => v.currentTripStatus === 'off-duty'),
-                  tableRowHeight,
-                  tableFontSize
-                )}
-              </div>
+            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+              {renderVehicleTable(
+                'off-duty',
+                'Off Duty Vehicles',
+                filteredVehicles.filter(v => v.currentTripStatus === 'off-duty'),
+                tableRowHeight,
+                tableFontSize
+              )}
+            </div>
 
-              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                {renderVehicleTable(
-                  'at-pickup',
-                  'At Pickup Vehicles',
-                  filteredVehicles.filter(v => v.currentTripStatus === 'at-pickup'),
-                  tableRowHeight,
-                  tableFontSize
-                )}
-              </div>
+            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+              {renderVehicleTable(
+                'at-pickup',
+                'At Pickup Vehicles',
+                filteredVehicles.filter(v => v.currentTripStatus === 'at-pickup'),
+                tableRowHeight,
+                tableFontSize
+              )}
+            </div>
 
-              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                {renderVehicleTable(
-                  'enroute-for-pickup',
-                  'Enroute for Pickup',
-                  filteredVehicles.filter(v => v.currentTripStatus === 'enroute-for-pickup'),
-                  tableRowHeight,
-                  tableFontSize
-                )}
-              </div>
+            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+              {renderVehicleTable(
+                'enroute-for-pickup',
+                'Enroute for Pickup',
+                filteredVehicles.filter(v => v.currentTripStatus === 'enroute-for-pickup'),
+                tableRowHeight,
+                tableFontSize
+              )}
+            </div>
 
-              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-                {renderVehicleTable(
-                  'maintenance',
-                  'Maintenance Vehicles',
-                  filteredVehicles.filter(v => v.currentTripStatus === 'maintenance'),
-                  tableRowHeight,
-                  tableFontSize
-                )}
+            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+              {renderVehicleTable(
+              'maintenance',
+              'Maintenance Vehicles',
+              filteredVehicles.filter(v => v.currentTripStatus === 'maintenance'),
+              tableRowHeight,
+              tableFontSize
+              )}
               </div>
             </div>
           </div>
