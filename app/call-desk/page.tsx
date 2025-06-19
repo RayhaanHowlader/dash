@@ -56,7 +56,15 @@ function formatTimeUp(createdAt: string, now: Date) {
   diff %= 3600;
   const minutes = Math.floor(diff / 60);
   const seconds = diff % 60;
-  return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  
+  // Format with leading zeros
+  const formattedHours = hours.toString().padStart(2, '0');
+  const formattedMinutes = minutes.toString().padStart(2, '0');
+  const formattedSeconds = seconds.toString().padStart(2, '0');
+  
+  return days > 0 
+    ? `${days}d ${formattedHours}h ${formattedMinutes}m ${formattedSeconds}s` 
+    : `${formattedHours}h ${formattedMinutes}m ${formattedSeconds}s`;
 }
 
 // Helper to format date in Indian format
@@ -833,7 +841,7 @@ export default function CallDeskPage() {
                   <div className="bg-[rgba(255,255,255,0.15)] text-white font-bold h-10 w-10 flex items-center justify-center rounded-full">
                     {loadedTickets.length}
                   </div>
-                  <h2 className="text-xl font-bold text-white tracking-wide">Loaded Vehicles</h2>
+                  <h2 className="text-xl font-bold text-green-500 tracking-wide">Loaded Vehicles</h2>
                 </div>
 
                 {
@@ -869,12 +877,12 @@ export default function CallDeskPage() {
                           <table className="dashboard-table" style={{tableLayout: 'fixed'}}>
                             <thead>
                               <tr className="bg-gray-900 text-xs border-b border-gray-700">
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '24%'}}>TICKET NUMBER</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '8%'}}>STATUS</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '18%'}}>VEHICLE NUMBER</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '18%'}}>WORK PLACE</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '20%'}}>DESCRIPTION</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '12%'}}>TIME UP</th>
+                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '22%'}}>TICKET NUMBER</th>
+                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '10%'}}>STATUS</th>
+                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>VEHICLE NUMBER</th>
+                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>WORK PLACE</th>
+                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '18%'}}>DESCRIPTION</th>
+                                <th className="px-4 py-3 " style={{width: '16%'}}>TIME UP</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-700">
@@ -917,7 +925,7 @@ export default function CallDeskPage() {
                                         {descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
                                       </span>
                                     </td>
-                                    <td className="px-4 py-3 font-mono text-red-400" style={{whiteSpace: 'nowrap'}}>{formatTimeUp(ticket.createdAt, now)}</td>
+                                    <td className="px-4 py-3 font-mono time-up" style={{whiteSpace: 'nowrap'}}>{formatTimeUp(ticket.createdAt, now)}</td>
                                   </tr>
                                 ))
                               ) : (
@@ -946,7 +954,7 @@ export default function CallDeskPage() {
                   <div className="bg-[rgba(255,255,255,0.15)] text-white font-bold h-10 w-10 flex items-center justify-center rounded-full">
                     {emptyTickets.length}
                   </div>
-                  <h2 className="text-xl font-bold text-white tracking-wide">Empty Vehicles</h2>
+                  <h2 className="text-xl font-bold text-green-500 tracking-wide">Empty Vehicles</h2>
                 </div>
 
                 {
@@ -982,12 +990,12 @@ export default function CallDeskPage() {
                           <table className="dashboard-table" style={{tableLayout: 'fixed'}}>
                             <thead>
                               <tr className="bg-gray-900 text-xs border-b border-gray-700">
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '24%'}}>TICKET NUMBER</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '8%'}}>STATUS</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '18%'}}>VEHICLE NUMBER</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '18%'}}>WORK PLACE</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '20%'}}>DESCRIPTION</th>
-                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '12%'}}>TIME UP</th>
+                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '22%'}}>TICKET NUMBER</th>
+                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '10%'}}>STATUS</th>
+                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>VEHICLE NUMBER</th>
+                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '17%'}}>WORK PLACE</th>
+                                <th className="px-4 py-3 text-left text-gray-300 font-medium" style={{width: '18%'}}>DESCRIPTION</th>
+                                <th className="px-4 py-3 " style={{width: '16%'}}>TIME UP</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-700">
@@ -1030,7 +1038,7 @@ export default function CallDeskPage() {
                                         {descriptionEdits[ticket.ticketId] ?? (ticket.ticket?.description === '-' ? 'Case not attend yet ❌' : (ticket.ticket?.description || '-'))}
                                       </span>
                                     </td>
-                                    <td className="px-4 py-3 font-mono text-red-400" style={{whiteSpace: 'nowrap'}}>{formatTimeUp(ticket.createdAt, now)}</td>
+                                    <td className="px-4 py-3 font-mono time-up" style={{whiteSpace: 'nowrap'}}>{formatTimeUp(ticket.createdAt, now)}</td>
                                   </tr>
                                 ))
                               ) : (

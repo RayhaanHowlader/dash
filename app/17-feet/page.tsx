@@ -828,86 +828,133 @@ export default function SeventeenFeetPage() {
         </header>
         {/* Main Content - Vehicle Tables */}
         <div className="relative w-full">
-          <div className="content-grid" style={{ paddingTop: '10px', paddingBottom: '20px' }}>
-            {/* Available Vehicles */}
-            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-              {renderVehicleTable(
-                'available',
-                'Available Vehicles',
-                filteredVehicles.filter(v => v.currentTripStatus === 'available'),
-                tableRowHeight,
-                tableFontSize
-              )}
-            </div>
-            {/* At Unloading Vehicles */}
-            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-              {renderVehicleTable(
-                'at-unloading',
-                'At Unloading Vehicles',
-                filteredVehicles.filter(v => v.currentTripStatus === 'at-unloading'),
-                tableRowHeight,
-                tableFontSize
-              )}
-            </div>
-            {/* In Transit Vehicles */}
-            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-              {renderVehicleTable(
-                'in-transit',
-                'In Transit Vehicles',
-                filteredVehicles.filter(v => v.currentTripStatus === 'in-transit'),
-                tableRowHeight,
-                tableFontSize
-              )}
-            </div>
-            {/* Empty Movement Vehicles */}
-            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-              {renderVehicleTable(
-                'empty-movement',
-                'Empty Movement Vehicles',
-                filteredVehicles.filter(v => v.currentTripStatus === 'empty-movement'),
-                tableRowHeight,
-                tableFontSize
-              )}
-            </div>
-            {/* Off Duty Vehicles */}
-            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-              {renderVehicleTable(
-                'off-duty',
-                'Off Duty Vehicles',
-                filteredVehicles.filter(v => v.currentTripStatus === 'off-duty'),
-                tableRowHeight,
-                tableFontSize
-              )}
-            </div>
-            {/* At Pickup Vehicles */}
-            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-              {renderVehicleTable(
-                'at-pickup',
-                'At Pickup Vehicles',
-                filteredVehicles.filter(v => v.currentTripStatus === 'at-pickup'),
-                tableRowHeight,
-                tableFontSize
-              )}
-            </div>
-            {/* Enroute for Pickup */}
-            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-              {renderVehicleTable(
-                'enroute-for-pickup',
-                'Enroute for Pickup',
-                filteredVehicles.filter(v => v.currentTripStatus === 'enroute-for-pickup'),
-                tableRowHeight,
-                tableFontSize
-              )}
-            </div>
-            {/* Maintenance Vehicles */}
-            <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
-              {renderVehicleTable(
-                'maintenance',
-                'Maintenance Vehicles',
-                filteredVehicles.filter(v => v.currentTripStatus === 'maintenance'),
-                tableRowHeight,
-                tableFontSize
-              )}
+          <button 
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-[rgba(30,30,47,0.6)] hover:bg-[rgba(42,42,94,0.7)] text-white p-2 rounded-r-lg backdrop-blur-lg border border-[rgba(255,255,255,0.1)]"
+            onClick={() => {
+              const container = document.querySelector('.content-grid');
+              if (container) {
+                container.scrollBy({ left: -350, behavior: 'smooth' });
+              }
+            }}
+            style={{
+              boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)'
+            }}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <button 
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-[rgba(30,30,47,0.6)] hover:bg-[rgba(42,42,94,0.7)] text-white p-2 rounded-l-lg backdrop-blur-lg border border-[rgba(255,255,255,0.1)]"
+            onClick={() => {
+              const container = document.querySelector('.content-grid');
+              if (container) {
+                container.scrollBy({ left: 350, behavior: 'smooth' });
+              }
+            }}
+            style={{
+              boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)'
+            }}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          
+          <div className="horizontal-scroll-fix">
+            <div className="content-grid" style={{ 
+              paddingTop: '10px', 
+              paddingBottom: '20px',
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'nowrap',
+              gap: '20px'
+            }}>
+              {/* Available Vehicles */}
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'available',
+                  'Available Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'available'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
+              {/* At Unloading Vehicles */}
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'at-unloading',
+                  'At Unloading Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'at-unloading'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
+              {/* In Transit Vehicles */}
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'in-transit',
+                  'In Transit Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'in-transit'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
+              {/* Empty Movement Vehicles */}
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'empty-movement',
+                  'Empty Movement Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'empty-movement'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
+              {/* Off Duty Vehicles */}
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'off-duty',
+                  'Off Duty Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'off-duty'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
+              {/* At Pickup Vehicles */}
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'at-pickup',
+                  'At Pickup Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'at-pickup'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
+              {/* Enroute for Pickup */}
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'enroute-for-pickup',
+                  'Enroute for Pickup',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'enroute-for-pickup'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
+              {/* Maintenance Vehicles */}
+              <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
+                {renderVehicleTable(
+                  'maintenance',
+                  'Maintenance Vehicles',
+                  filteredVehicles.filter(v => v.currentTripStatus === 'maintenance'),
+                  tableRowHeight,
+                  tableFontSize
+                )}
+              </div>
             </div>
           </div>
         </div>

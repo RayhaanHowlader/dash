@@ -25,8 +25,10 @@
 body {
   background-color: var(--bg-primary);
   background-image: 
-    radial-gradient(circle at 20% 20%, rgba(78, 84, 200, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 80% 80%, rgba(252, 66, 74, 0.1) 0%, transparent 40%);
+    radial-gradient(circle at 15% 15%, rgba(78, 84, 200, 0.35) 0%, transparent 60%),
+    radial-gradient(circle at 85% 85%, rgba(252, 66, 74, 0.35) 0%, transparent 60%),
+    radial-gradient(circle at 50% 50%, rgba(42, 42, 94, 0.15) 0%, transparent 80%),
+    radial-gradient(circle at 80% 20%, rgba(255, 171, 0, 0.1) 0%, transparent 50%);
   color: var(--text-primary);
   font-family: 'IBM Plex Sans', 'Montserrat', sans-serif;
   margin: 0;
@@ -147,12 +149,15 @@ body {
   color: var(--text-secondary);
   font-weight: 600;
   text-align: left;
-  padding: 1rem;
-  font-size: 0.8rem;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Table rows with hover effect */
@@ -170,7 +175,19 @@ body {
 .dashboard-table td {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   color: var(--text-primary);
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-table td.time-up {
+  color: var(--danger);
+  font-weight: 600;
+  padding: 4px 8px;
+  text-align: center;
+  /* animation: timeup-pulse 2.5s infinite; */
 }
 
 /* Status indicators */
@@ -198,10 +215,10 @@ body {
 
 /* Status badges */
 .status-badge {
-  padding: 0.25rem 0.75rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 9999px;
   font-weight: 500;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: white;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -227,13 +244,15 @@ body {
   color: white;
 }
 
-/* Dashboard layout */
+/* Dashboard layout with horizontal scrolling */
 .dashboard-container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   padding: 1.5rem;
-  overflow-x: hidden;
+  max-width: 100vw;
+  overflow: visible !important;
+  position: relative;
 }
 
 .header-container {
@@ -247,28 +266,40 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Ensure the content grid displays correctly */
+/* Horizontal-only scrolling grid for vehicle tables */
 .content-grid {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 1.5rem;
-  width: 100%;
-  overflow-x: auto;
-  padding-bottom: 1rem;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  width: max-content !important;
+  min-width: 100% !important;
+  grid-template-columns: none !important;
+  grid-template-rows: none !important;
+  padding: 20px 10px;
   position: relative;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
+  overflow-x: scroll !important;
+  overflow-y: hidden !important;
+  white-space: nowrap !important;
+  gap: 20px !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: thin !important;
+  scroll-behavior: smooth !important;
+  touch-action: pan-x !important;
+  cursor: grab !important;
 }
 
-/* Make each card in the grid have consistent width */
+/* Make each card in the grid have consistent width for horizontal scrolling */
 .content-grid > div {
-  flex: 0 0 auto;
-  width: 1250px;
-  min-width: 1250px;
-  max-width: 100%;
-  margin-right: 0.5rem;
+  flex-shrink: 0;
+  width: 950px;
+  min-width: 950px;
+  margin-right: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.content-grid > div:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
 /* Input styles */
@@ -298,8 +329,8 @@ body {
 
 /* Status indicator circles */
 .status-circle {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -331,14 +362,47 @@ body {
   color: white;
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments - maintain horizontal-only layout */
 @media (max-width: 768px) {
   .dashboard-container {
-    padding: 1rem;
+    padding: 0.5rem;
+    overflow-x: hidden; /* Prevent horizontal scrolling of container */
   }
   
   .content-grid {
-    grid-template-columns: 1fr;
+    padding: 10px 5px;
+    gap: 10px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+  }
+  
+  .content-grid > div {
+    width: 300px;
+    min-width: 300px;
+    max-width: 300px;
+    scroll-snap-align: start;
+    display: inline-block;
+  }
+  
+  .vehicle-table-card {
+    width: 300px;
+    min-width: 300px;
+  }
+  
+  .scroll-nav-button {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .scroll-left {
+    left: 5px;
+  }
+  
+  .scroll-right {
+    right: 5px;
   }
 }
 
@@ -370,9 +434,44 @@ body {
   z-index: 1;
 }
 
+/* Scroll navigation buttons */
+.scroll-nav-button {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  background: rgba(30, 30, 47, 0.8);
+  color: white;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.scroll-nav-button:hover {
+  background: rgba(78, 84, 200, 0.8);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.scroll-left {
+  left: 20px;
+}
+
+.scroll-right {
+  right: 20px;
+}
+
 /* Customize scrollbar for webkit browsers */
 .content-grid::-webkit-scrollbar {
-  height: 8px;
+  height: 10px !important;
 }
 
 .content-grid::-webkit-scrollbar-track {
@@ -391,18 +490,18 @@ body {
 
 /* Column specific widths - adjusted to fit all columns */
 .col-vehicle-number {
+  min-width: 100px;
+  width: 100px;
+}
+
+.col-type {
   min-width: 120px;
   width: 120px;
 }
 
-.col-type {
-  min-width: 140px;
-  width: 140px;
-}
-
 .col-place {
-  min-width: 160px;
-  width: 160px;
+  min-width: 120px;
+  width: 120px;
 }
 
 .col-halt-hrs {
@@ -411,13 +510,245 @@ body {
 }
 
 .col-status {
-  min-width: 45px;
-  width: 45px;
+  min-width: 40px;
+  width: 40px;
 }
 
 /* Ensure proper overflow behavior for tables */
 .overflow-x-auto {
   overflow-x: auto;
+  overflow-y: hidden;
   width: 100%;
   -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+}
+
+/* Add this style after the dashboard-table th styles */
+.dashboard-table th.time-up-header {
+  color: var(--danger);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+  background: rgba(252, 66, 74, 0.05);
+  border-bottom: 1px solid rgba(252, 66, 74, 0.2);
+  text-shadow: 0 0 10px rgba(252, 66, 74, 0.2);
+}
+
+/* Vehicle table card styling */
+.vehicle-table-card {
+  width: 900px;
+  min-width: 900px;
+  background: rgba(30, 30, 47, 0.35);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 5px;
+  overflow: hidden;
+}
+
+.vehicle-table-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* Fixed table layout to prevent column resize issues */
+.fixed-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Make the time column stand out */
+.time-column {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* Add animation for time column */
+/* @keyframes timeup-pulse {
+  0%, 100% { background-color: rgba(252, 66, 74, 0.05); }
+  50% { background-color: rgba(252, 66, 74, 0.15); }
+} */
+
+.time-up {
+  animation: timeup-pulse 2.5s infinite;
+  border-radius: 4px;
+}
+
+/* Optimize horizontal scroll container */
+.horizontal-scroll-container {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 20px 10px;
+  width: 100%;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-item {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+  margin-right: 20px;
+}
+
+/* Add grab cursor for scrollable content */
+.grabable {
+  cursor: grab;
+}
+
+.grabable:active {
+  cursor: grabbing;
+}
+
+/* Add universal navigation arrows for horizontal scrolling */
+.nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(30, 30, 47, 0.8);
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.2s ease;
+}
+
+.nav-arrow:hover {
+  background: rgba(78, 84, 200, 0.8);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.nav-arrow-left {
+  left: 20px;
+}
+
+.nav-arrow-right {
+  right: 20px;
+}
+
+/* Add this new rule to force horizontal-only layout */
+.horizontal-only-container {
+  width: 100%;
+  max-width: 100vw;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+}
+
+.horizontal-only-container > * {
+  display: inline-block;
+  vertical-align: top;
+  white-space: normal;
+}
+
+/* Override any grid-template settings that might cause vertical stacking */
+@media (max-width: 1200px) {
+  .content-grid {
+    grid-template-columns: none;
+    display: flex;
+  }
+  
+  .dashboard-container {
+    overflow-y: hidden;
+  }
+}
+
+/* Ensure no vertical stacking by forcing single row */
+.single-row-only {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: max-content;
+  min-width: 100%;
+}
+
+/* Add specific rule to make content-grid scrollable */
+body {
+  overflow-x: hidden; /* Prevent body from scrolling horizontally */
+}
+
+/* Ensure the content grid has enough width for all items */
+.content-grid {
+  width: max-content !important; /* Override the auto width to ensure it's as wide as needed */
+}
+
+/* Fix potential issues with flex items */
+.content-grid > div {
+  flex-shrink: 0 !important; /* Prevent shrinking */
+}
+
+/* Add active grabbing cursor */
+.content-grid:active {
+  cursor: grabbing !important;
+}
+
+/* Add specific rule for webkit browsers */
+.content-grid::-webkit-scrollbar {
+  height: 10px !important; /* Make scrollbar slightly bigger for easier interaction */
+}
+
+@media (max-width: 768px) {
+  .content-grid::-webkit-scrollbar {
+    height: 5px !important; /* Smaller on mobile */
+  }
+}
+
+/* Fix major horizontal scrolling issues */
+.horizontal-scroll-fix {
+  overflow-x: scroll !important;
+  overflow-y: hidden !important;
+  white-space: nowrap !important;
+  width: 100% !important;
+  position: relative !important;
+  display: block !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Remove any potential overflow: hidden from parent elements */
+.dashboard-container > div {
+  overflow: visible !important;
+}
+
+/* Fix potential issues with flexbox that might prevent scrolling */
+.dashboard-container {
+  overflow: visible !important;
+  max-width: 100vw !important;
+  width: 100% !important;
+  min-height: 0 !important; /* Fix flexbox scrolling issues */
+}
+
+/* Fix scrolling prevention on mobile */
+@media (max-width: 768px) {
+  body, html {
+    overflow-x: hidden;
+    position: relative;
+    height: 100%;
+  }
+  
+  .dashboard-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+  
+  .content-grid {
+    -webkit-overflow-scrolling: touch !important;
+    overflow-x: scroll !important;
+    scrollbar-width: thin !important;
+  }
 }

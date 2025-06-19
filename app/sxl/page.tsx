@@ -753,7 +753,8 @@ export default function SXLPage() {
 
     return (
       <div className="glass-card mb-6 overflow-hidden" style={{
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
+        maxWidth: '100%'
       }}>
         <div className="glass-header p-4 flex items-center gap-3">
           <div className="bg-[rgba(255,255,255,0.15)] text-white font-bold h-10 w-10 flex items-center justify-center rounded-full">
@@ -762,29 +763,30 @@ export default function SXLPage() {
           <h2 className="text-xl font-bold text-white tracking-wide">{title}</h2>
         </div>
         
-        <div className="overflow-x-auto w-full" style={{ 
+                <div className="overflow-x-auto w-full" style={{ 
           maxWidth: '100%', 
-          overflowY: 'hidden',
-          background: 'rgba(30, 30, 47, 0.2)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)'
+          overflowY: 'hidden', 
+          background: 'rgba(30, 30, 47, 0.2)', 
+          backdropFilter: 'blur(12px)', 
+          WebkitBackdropFilter: 'blur(12px)',
+          fontSize: '0.85rem'
         }}>
           <table className="dashboard-table" style={{ width: '100%' }}>
             <thead>
               <tr>
-                <th className="col-vehicle-number">VEHICLE NUMBER</th>
-                <th className="col-type">TYPE</th>
-                <th className="col-place">PLACE</th>
+                                <th className="col-vehicle-number" style={{ width: '120px' }}>VEHICLE NUMBER</th>
+                <th className="col-type" style={{ width: '120px' }}>TYPE</th>
+                <th className="col-place" style={{ width: '195px' }}>PLACE</th>
                 {status === 'in-transit' && (
-                  <th className="col-place">DESTINATION</th>
+                  <th className="col-place" style={{ width: '220px' }}>DESTINATION</th>
                 )}
-                <th className="col-halt-hrs">HALT HRS</th>
+                <th className="col-halt-hrs" style={{ width: '80px' }}>HALT HRS</th>
                 {!isAvailableTable && (
-                  <th className="col-halt-hrs">PKMS</th>
+                  <th className="col-halt-hrs" style={{ width: '80px' }}>PKMS</th>
                 )}
-                <th className="col-status text-center">PUC</th>
-                <th className="col-status text-center">NP</th>
-                <th className="col-status text-center">FIT</th>
+                <th className="col-status text-center" style={{ width: '50px' }}>PUC</th>
+                <th className="col-status text-center" style={{ width: '50px' }}>NP</th>
+                <th className="col-status text-center" style={{ width: '50px' }}>FIT</th>
               </tr>
             </thead>
             <tbody>
@@ -858,20 +860,20 @@ export default function SXLPage() {
                     onClick={() => handleViewDetails(vehicle)}
                     className="hover:bg-[rgba(255,255,255,0.05)] transition-colors duration-200 cursor-pointer"
                   >
-                    <td className="col-vehicle-number font-medium text-white">{vehicle.vehicleNumber}</td>
-                    <td className="col-type">{vehicle.vehicleType}</td>
-                    <td className="col-place truncate">
+                    <td className="col-vehicle-number font-medium text-white" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{vehicle.vehicleNumber}</td>
+                    <td className="col-type" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{vehicle.vehicleType}</td>
+                    <td className="col-place truncate" style={{ maxWidth: '200px' }}>
                       {getVehiclePlace(vehicle, status, trips)}
                       </td>
                       {status === 'in-transit' && (
-                      <td className="col-place truncate">
+                      <td className="col-place truncate" style={{ maxWidth: '200px' }}>
                           {(() => {
                             const inTransitTrip = allTrips.find(t => t.status === 'in-transit');
                             return inTransitTrip?.destination?.name || '-';
                           })()}
                         </td>
                       )}
-                    <td className="col-halt-hrs">
+                    <td className="col-halt-hrs" style={{ maxWidth: '80px', overflow: 'hidden' }}>
                       <span className={`status-badge ${haltHoursClass}`} style={{
                         backdropFilter: 'blur(8px)',
                         background: hours >= 7
@@ -882,7 +884,9 @@ export default function SXLPage() {
                         color: 'white',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
                         boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
-                        display: 'inline-block'
+                        display: 'inline-block',
+                        padding: '2px 6px',
+                        fontSize: '0.85rem'
                       }}>
                           {(() => {
                             const days = Math.floor(hours / 24);
@@ -895,25 +899,25 @@ export default function SXLPage() {
                         </span>
                       </td>
                     {!isAvailableTable && (
-                      <td className="col-halt-hrs">{pendingDistance}</td>
+                      <td className="col-halt-hrs" style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingDistance}</td>
                     )}
-                    <td className="col-status text-center">
+                    <td className="col-status text-center" style={{ width: '50px', padding: '0 2px' }}>
                       <div className="flex justify-center">
-                        <span className={`status-circle status-circle-${pucStatus.status} inline-flex items-center justify-center`}>
+                        <span className={`status-circle status-circle-${pucStatus.status} inline-flex items-center justify-center`} style={{ height: '20px', width: '20px', fontSize: '0.7rem' }}>
                           {pucStatus.icon}
                       </span>
                       </div>
                     </td>
-                    <td className="col-status text-center">
+                    <td className="col-status text-center" style={{ width: '50px', padding: '0 2px' }}>
                       <div className="flex justify-center">
-                        <span className={`status-circle status-circle-${npStatus.status} inline-flex items-center justify-center`}>
+                        <span className={`status-circle status-circle-${npStatus.status} inline-flex items-center justify-center`} style={{ height: '20px', width: '20px', fontSize: '0.7rem' }}>
                           {npStatus.icon}
                       </span>
                       </div>
                     </td>
-                    <td className="col-status text-center">
+                    <td className="col-status text-center" style={{ width: '50px', padding: '0 2px' }}>
                       <div className="flex justify-center">
-                        <span className={`status-circle status-circle-${fitStatus.status} inline-flex items-center justify-center`}>
+                        <span className={`status-circle status-circle-${fitStatus.status} inline-flex items-center justify-center`} style={{ height: '20px', width: '20px', fontSize: '0.7rem' }}>
                           {fitStatus.icon}
                       </span>
                       </div>
@@ -1156,10 +1160,15 @@ export default function SXLPage() {
             </svg>
           </button>
           
-          <div className="content-grid" style={{
-            paddingTop: '10px',
-            paddingBottom: '20px'
-          }}>
+          <div className="horizontal-scroll-fix">
+            <div className="content-grid" style={{
+              paddingTop: '10px',
+              paddingBottom: '20px',
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'nowrap',
+              gap: '20px'
+            }}>
             {/* Available Vehicles */}
             <div className="w-full overflow-hidden hover:translate-y-[-5px] transition-transform duration-300">
               {renderVehicleTable(
@@ -1247,6 +1256,7 @@ export default function SXLPage() {
               tableFontSize
               )}
             </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1263,3 +1273,5 @@ export default function SXLPage() {
     </div>
   );
 } 
+
+
