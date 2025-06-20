@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Button from '../../components/Button';
 import Table from '../../components/Table';
 import DatePicker from 'react-datepicker';
@@ -11,6 +11,7 @@ import { fadeIn, staggerContainer, slideIn } from '../../utils/motion';
 import Logo from '../../components/Logo';
 import { IBM_Plex_Sans, Montserrat } from 'next/font/google';
 import VehicleDetailsModal from '../../components/VehicleDetailsModal';
+import BranchAvailabilityLineChart from '../../components/BranchAvailabilityLineChart';
 
 interface Vehicle {
   _id: string;
@@ -128,6 +129,7 @@ export default function MXLPage() {
   const [latestRemark, setLatestRemark] = useState<string | null>(null);
   const [latestRemarkUserName, setLatestRemarkUserName] = useState<string | null>(null);
   const [latestRemarkUserRole, setLatestRemarkUserRole] = useState<string | null>(null);
+  const chartRef = useRef<any>(null);
 
   const fetchVehicles = async (isRefresh = false) => {
       try {
@@ -407,6 +409,15 @@ export default function MXLPage() {
     }
   };
 
+  // Calculate available vehicles per branch (place)
+  const availableVehicles = filteredVehicles.filter(v => v.currentTripStatus === 'available');
+  const branchCountMap: Record<string, number> = {};
+  availableVehicles.forEach(vehicle => {
+    const place = getVehiclePlace(vehicle, 'available', trips) || '-';
+    branchCountMap[place] = (branchCountMap[place] || 0) + 1;
+  });
+  const branchChartData = Object.entries(branchCountMap).map(([branch, count]) => ({ branch, count }));
+
   if (loading) {
     return (
       <div className="flex h-screen bg-[var(--bg-primary)]">
@@ -657,6 +668,10 @@ export default function MXLPage() {
       `
     }}>
       {refreshing && <LoadingBar progress={loadProgress} />}
+      {/* Hidden chart for download */}
+      <div style={{ position: 'absolute', left: '-9999px', top: 0, width: 900, height: 'auto', pointerEvents: 'none', zIndex: -1 }} aria-hidden="true">
+        <BranchAvailabilityLineChart ref={chartRef} data={branchChartData} logoUrl="/logo.png" />
+      </div>
       <div className="dashboard-container" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
         <header className="header-container" style={{
           background: 'rgba(30, 30, 47, 0.35)',
@@ -677,12 +692,29 @@ export default function MXLPage() {
                 <span className="text-white font-bold text-2xl">APML CONTROL24 X7</span>
               </div>
             <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-              <div className="relative w-full md:w-64">
-                <div className="search-icon">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <div className="flex flex-row items-center gap-2 w-full md:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (chartRef.current) {
+                      const chart = chartRef.current;
+                      const base64 = chart.toBase64Image ? chart.toBase64Image() : (chart.chartInstance?.toBase64Image ? chart.chartInstance.toBase64Image() : null);
+                      if (base64) {
+                        const link = document.createElement('a');
+                        link.href = base64;
+                        link.download = 'branch-availability-chart.png';
+                        link.click();
+                      }
+                    }
+                  }}
+                  className="flex flex-row items-center px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow"
+                  title="Download chart as PNG"
+                >
+                  <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
-            </div>
+                  Chart
+                </button>
                 <input
                   type="text"
                   placeholder="Filter by place..."
@@ -696,7 +728,7 @@ export default function MXLPage() {
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
                   }}
                 />
-          </div>
+              </div>
               <Button
                 variant="secondary"
                 onClick={() => fetchVehicles(true)}

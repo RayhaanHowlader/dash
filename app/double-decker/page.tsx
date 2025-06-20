@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 // import Sidebar from '../../components/Sidebar';
 // import Card from '../../components/Card';
 import Button from '../../components/Button';
@@ -13,6 +13,7 @@ import { fadeIn, staggerContainer, slideIn } from '../../utils/motion';
 import Logo from '../../components/Logo';
 import { IBM_Plex_Sans, Montserrat } from 'next/font/google';
 import VehicleDetailsModal from '../../components/VehicleDetailsModal';
+import BranchAvailabilityLineChart from '../../components/BranchAvailabilityLineChart';
 
 interface Vehicle {
   _id: string;
@@ -125,6 +126,7 @@ export default function DoubleDeckerPage() {
   const [tableRowHeight, setTableRowHeight] = useState(32);
   const [placeFilter, setPlaceFilter] = useState('');
   const [vehicleDocuments, setVehicleDocuments] = useState<{ [key: string]: any }>({});
+  const chartRef = useRef<any>(null);
 
   const fetchVehicles = async (isRefresh = false) => {
       try {
@@ -640,6 +642,15 @@ export default function DoubleDeckerPage() {
     );
   };
 
+  // Calculate available vehicles per branch (place)
+  const availableVehicles = filteredVehicles.filter(v => v.currentTripStatus === 'available');
+  const branchCountMap: Record<string, number> = {};
+  availableVehicles.forEach(vehicle => {
+    const place = vehicle.waypoint?.name || '-';
+    branchCountMap[place] = (branchCountMap[place] || 0) + 1;
+  });
+  const branchChartData = Object.entries(branchCountMap).map(([branch, count]) => ({ branch, count }));
+
   if (loading || refreshing) {
     return (
       <div className={`min-h-screen w-full bg-[var(--bg-primary)] ${ibmPlexSans.variable} ${montserrat.variable}`} style={{
@@ -706,6 +717,28 @@ export default function DoubleDeckerPage() {
               <div className="flex-1 flex justify-center">
                 <span className="text-white font-bold text-2xl">APML CONTROL24 X7</span>
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (chartRef.current) {
+                    const chart = chartRef.current;
+                    const base64 = chart.toBase64Image ? chart.toBase64Image() : (chart.chartInstance?.toBase64Image ? chart.chartInstance.toBase64Image() : null);
+                    if (base64) {
+                      const link = document.createElement('a');
+                      link.href = base64;
+                      link.download = 'branch-availability-chart.png';
+                      link.click();
+                    }
+                  }
+                }}
+                className="ml-2 px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow"
+                title="Download chart as PNG"
+              >
+                <svg className="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Chart
+              </button>
               <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
                 <div className="relative w-full md:w-64">
                   <div className="search-icon">
@@ -751,6 +784,9 @@ export default function DoubleDeckerPage() {
               </div>
             </div>
           </header>
+          <div style={{ position: 'absolute', left: '-9999px', top: 0, width: 900, height: 'auto', pointerEvents: 'none', zIndex: -1 }} aria-hidden="true">
+            <BranchAvailabilityLineChart ref={chartRef} data={branchChartData} logoUrl="/logo.png" />
+          </div>
           <div className="relative w-full">
             <button 
               className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-[rgba(30,30,47,0.6)] hover:bg-[rgba(42,42,94,0.7)] text-white p-2 rounded-r-lg backdrop-blur-lg border border-[rgba(255,255,255,0.1)]"
@@ -997,16 +1033,38 @@ export default function DoubleDeckerPage() {
           border: '1px solid rgba(255, 255, 255, 0.12)'
         }}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center">
-                <Logo />
-                <div className="ml-4">
+            <div className="flex items-center">
+              <Logo />
+              <div className="ml-4">
                 <h1 className="text-3xl font-bold text-white tracking-wide">DOUBLE DECKER VEHICLE</h1>
                 <p className="text-gray-400 text-sm">Monitor and manage your DOUBLE DECKER VEHICLE fleet operations</p>
-                </div>
               </div>
-              <div className="flex-1 flex justify-center">
-                <span className="text-white font-bold text-2xl">APML CONTROL24 X7</span>
-              </div>
+            </div>
+            <div className="flex-1 flex justify-center">
+              <span className="text-white font-bold text-2xl">APML CONTROL24 X7</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                if (chartRef.current) {
+                  const chart = chartRef.current;
+                  const base64 = chart.toBase64Image ? chart.toBase64Image() : (chart.chartInstance?.toBase64Image ? chart.chartInstance.toBase64Image() : null);
+                  if (base64) {
+                    const link = document.createElement('a');
+                    link.href = base64;
+                    link.download = 'branch-availability-chart.png';
+                    link.click();
+                  }
+                }
+              }}
+              className="ml-2 px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow"
+              title="Download chart as PNG"
+            >
+              <svg className="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Chart
+            </button>
             <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
               <div className="relative w-full md:w-64">
                 <div className="search-icon">
@@ -1052,6 +1110,9 @@ export default function DoubleDeckerPage() {
             </div>
           </div>
         </header>
+        <div style={{ position: 'absolute', left: '-9999px', top: 0, width: 900, height: 'auto', pointerEvents: 'none', zIndex: -1 }} aria-hidden="true">
+          <BranchAvailabilityLineChart ref={chartRef} data={branchChartData} logoUrl="/logo.png" />
+        </div>
         <div className="relative w-full">
           <button 
             className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-[rgba(30,30,47,0.6)] hover:bg-[rgba(42,42,94,0.7)] text-white p-2 rounded-r-lg backdrop-blur-lg border border-[rgba(255,255,255,0.1)]"
