@@ -14,7 +14,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching MXL vehicles:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch MXL vehicles' },
+      { error: 'Network Issue' },
       { status: 500 }
     );
   }

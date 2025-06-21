@@ -14,7 +14,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching Car Carrier vehicles:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch Car Carrier vehicles' },
+      { error: 'Network Issue' },
       { status: 500 }
     );
   }

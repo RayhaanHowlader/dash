@@ -129,13 +129,13 @@ const BranchAvailabilityLineChart = forwardRef<any, BranchAvailabilityLineChartP
   };
 
   return (
-    <div style={{height: '150%', width: '150%', maxWidth: 1000, margin: '0 auto', background: 'rgba(30,30,47,0.5)', borderRadius: 12, padding: 24, marginBottom: 32 }}>
+    <div style={{height: '150%', width: '952px', maxWidth: '100%', margin: '0 auto', background: 'rgba(30,30,47,0.5)', borderRadius: 12, padding: 24, marginBottom: 32 }}>
       <Line
         ref={ref}
         data={chartData}
         options={options}
-        width={1800}
-        height={900}
+        width={952}
+        height={476}
         plugins={[backgroundPlugin, ...(logoPlugin ? [logoPlugin] : [])]}
       />
     </div>

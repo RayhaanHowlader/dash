@@ -14,7 +14,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching SXL vehicles:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch SXL vehicles' },
+      { error: 'Network Issue' },
       { status: 500 }
     );
   }

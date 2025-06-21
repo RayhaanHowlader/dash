@@ -14,7 +14,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching Trailer vehicles:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch Trailer vehicles' },
+      { error: 'Network Issue' },
       { status: 500 }
     );
   }

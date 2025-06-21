@@ -14,6 +14,7 @@ import Logo from '../../components/Logo';
 import { IBM_Plex_Sans, Montserrat } from 'next/font/google';
 import VehicleDetailsModal from '../../components/VehicleDetailsModal';
 import BranchAvailabilityLineChart from '../../components/BranchAvailabilityLineChart';
+import BarChart from '../../components/BarChart';
 
 const ibmPlexSans = IBM_Plex_Sans({
   weight: ['300', '400', '500', '600', '700'],
@@ -216,6 +217,7 @@ export default function CAR_CARRIERPage() {
   const [latestRemarkUserName, setLatestRemarkUserName] = useState<string | null>(null);
   const [latestRemarkUserRole, setLatestRemarkUserRole] = useState<string | null>(null);
   const chartRef = useRef<any>(null);
+  const barChartRef = useRef<any>(null);
 
   const memoizedFilteredVehicles = React.useMemo(() => {
     let filtered = vehicles;
@@ -472,7 +474,7 @@ export default function CAR_CARRIERPage() {
           });
         setLoadProgress(100);
         } else {
-          setError(result.message || 'Failed to fetch vehicles');
+          setError(result.message || 'Network Issue');
         }
       } catch (err) {
         setError('An error occurred while fetching vehicles');
@@ -707,14 +709,110 @@ export default function CAR_CARRIERPage() {
     };
   };
 
+  const handleDownloadChart = () => {
+    // Download line chart first
+    if (chartRef.current) {
+      const lineChart = chartRef.current;
+      const lineChartCanvas = lineChart.canvas;
+      
+      // Download just the line chart image
+      const lineChartLink = document.createElement('a');
+      lineChartLink.download = `car_carrier_branch_chart_${new Date().toISOString().slice(0, 10)}.png`;
+      lineChartLink.href = lineChartCanvas.toDataURL('image/png');
+      lineChartLink.click();
+    }
+    
+    // Download bar chart with tables
+    if (barChartRef.current && barChartRef.current.chartRef.current) {
+      const barChart = barChartRef.current.chartRef.current;
+      const barChartCanvas = barChart.canvas;
+      
+      // Import html2canvas dynamically
+      import('html2canvas').then((htmlCanvas) => {
+        // Use html2canvas to capture the entire bar chart container with tables
+        if (barChartRef.current && barChartRef.current.containerRef.current) {
+          htmlCanvas.default(barChartRef.current.containerRef.current, {
+            backgroundColor: '#1a1a2e',
+            scale: 1.5, // Higher scale for better quality
+            logging: false,
+            allowTaint: true,
+            useCORS: true,
+            width: 1872, // Fixed width for consistency
+            height: 2860 // Fixed height for consistency
+          }).then((fullCanvas) => {
+            // Convert to image and download
+            const barChartLink = document.createElement('a');
+            barChartLink.download = `car_carrier_bar_chart_with_tables_${new Date().toISOString().slice(0, 10)}.png`;
+            barChartLink.href = fullCanvas.toDataURL('image/png');
+            setTimeout(() => barChartLink.click(), 500); // Add small delay between downloads
+          }).catch((err) => {
+            console.error('Error rendering bar chart with tables:', err);
+            
+            // Fallback to just the bar chart if html2canvas fails
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 1872;
+            tempCanvas.height = 1200;
+            const ctx = tempCanvas.getContext('2d');
+            
+            if (ctx) {
+              // Fill background
+              ctx.fillStyle = '#1a1a2e';
+              ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+              
+              // Draw the chart
+              ctx.drawImage(barChartCanvas, 0, 0, tempCanvas.width, tempCanvas.height);
+              
+              // Convert to image and download
+              const barChartLink = document.createElement('a');
+              barChartLink.download = `car_carrier_bar_chart_${new Date().toISOString().slice(0, 10)}.png`;
+              barChartLink.href = tempCanvas.toDataURL('image/png');
+              setTimeout(() => barChartLink.click(), 500);
+            }
+          });
+        }
+      }).catch(err => {
+        console.error('Error importing html2canvas:', err);
+        
+        // Fallback if the import fails
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 1872;
+        tempCanvas.height = 1200;
+        const ctx = tempCanvas.getContext('2d');
+        
+        if (ctx) {
+          // Fill background
+          ctx.fillStyle = '#1a1a2e';
+          ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+          
+          // Draw the chart
+          ctx.drawImage(barChartCanvas, 0, 0, tempCanvas.width, tempCanvas.height);
+          
+          // Convert to image and download
+          const barChartLink = document.createElement('a');
+          barChartLink.download = `car_carrier_bar_chart_${new Date().toISOString().slice(0, 10)}.png`;
+          barChartLink.href = tempCanvas.toDataURL('image/png');
+          setTimeout(() => barChartLink.click(), 500);
+        }
+      });
+    }
+  };
+
   // Calculate available vehicles per branch (place)
   const availableVehicles = filteredVehicles.filter(v => v.currentTripStatus === 'available');
   const branchCountMap: Record<string, number> = {};
+  const branchMap: Record<string, { count: number; vehicles: { vehicleNumber: string; haltingHours: number }[] }> = {};
   availableVehicles.forEach(vehicle => {
     const place = getVehiclePlace(vehicle, 'available', trips) || '-';
     branchCountMap[place] = (branchCountMap[place] || 0) + 1;
+    
+    if (!branchMap[place]) {
+      branchMap[place] = { count: 0, vehicles: [] };
+    }
+    branchMap[place].count += 1;
+    branchMap[place].vehicles.push({ vehicleNumber: vehicle.vehicleNumber, haltingHours: vehicle.haltingHours || 0 });
   });
   const branchChartData = Object.entries(branchCountMap).map(([branch, count]) => ({ branch, count }));
+  const barChartData = Object.entries(branchMap).map(([branch, { count, vehicles }]) => ({ branch, count, vehicles }));
 
   if (loading) {
     return (
@@ -752,6 +850,10 @@ export default function CAR_CARRIERPage() {
     }}>
       {refreshing && <LoadingBar progress={loadProgress} />}
       <div className="dashboard-container" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
+        {/* Hidden Bar Chart for download only */}
+        <div style={{ position: 'absolute', left: '-9999px', top: 0, width: '1872px', height: 'auto', pointerEvents: 'none', zIndex: -1 }} aria-hidden="true">
+          <BarChart ref={barChartRef} data={barChartData} logoUrl="/logo.png" pageName="CAR CARRIER" />
+        </div>
         <header className="header-container" style={{
           background: 'rgba(30, 30, 47, 0.35)',
           backdropFilter: 'blur(15px)',
@@ -774,27 +876,16 @@ export default function CAR_CARRIERPage() {
             
             <button
               type="button"
-              onClick={() => {
-                if (chartRef.current) {
-                  const chart = chartRef.current;
-                  const base64 = chart.toBase64Image ? chart.toBase64Image() : (chart.chartInstance?.toBase64Image ? chart.chartInstance.toBase64Image() : null);
-                  if (base64) {
-                    const link = document.createElement('a');
-                    link.href = base64;
-                    link.download = 'branch-availability-chart.png';
-                    link.click();
-                  }
-                }
-              }}
+              onClick={handleDownloadChart}
               className="ml-2 px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow"
-              title="Download chart as PNG"
+              title="Download charts as PNG"
             >
               <svg className="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              Chart
+              Download Charts
             </button>
-
+            
             <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
               <div className="relative w-full md:w-64">
                 <div className="search-icon">

@@ -22,7 +22,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching ticket forms:', error);
     return NextResponse.json(
-      { status: 'error', message: 'Failed to fetch ticket forms' },
+      { status: 'error', message: ' Network Issue' },
       { status: 500 }
     );
   }

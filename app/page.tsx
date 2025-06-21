@@ -67,10 +67,10 @@ export default function Home() {
         if (result.status === 'success') {
           setStats(result.data);
         } else {
-          setError(result.message || 'Failed to fetch vehicle statistics');
+          setError(result.message || 'Network Issue');
         }
       } catch (err) {
-        setError('An error occurred while fetching vehicle statistics');
+        setError('Network Issue');
         console.error(err);
       } finally {
         setLoading(false);

@@ -529,11 +529,11 @@ export default function CallDeskPage() {
         setTickets(sortedTickets);
         setLoadProgress(100);
       } else {
-        setError(result.message || 'Failed to fetch tickets');
+        setError(result.message || 'Network Issue ');
       }
     } catch (e: any) {
       setError(e.message);
-      console.error('Failed to fetch tickets:', e);
+      console.error('Network Issue:', e);
     } finally {
       setLoading(false);
       setRefreshing(false);

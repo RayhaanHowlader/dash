@@ -14,7 +14,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error fetching 17 Feet vehicles:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch 17 Feet vehicles' },
+      { error: 'network Issue' },
       { status: 500 }
     );
   }
