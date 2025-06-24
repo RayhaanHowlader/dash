@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-// import Sidebar from '../components/Sidebar';
+import LogoutButton from '@/components/LogoutButton';
+import Sidebar from '../components/Sidebar';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -41,7 +42,7 @@ interface VehicleStats {
 }
 
 export default function Home() {
-  // const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [stats, setStats] = useState<VehicleStats>({
     sxl: 0,
     mxl: 0,
@@ -128,12 +129,12 @@ export default function Home() {
   if (loading) {
     return (
       <div className="flex h-screen">
-        {/* <Sidebar onToggle={(collapsed) => setSidebarCollapsed(collapsed)} /> */}
-        {/* <main className={`flex-1 p-8 overflow-auto transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}> */}
+        <Sidebar onToggle={(collapsed) => setSidebarCollapsed(collapsed)} />
+        <main className={`flex-1 p-8 overflow-auto transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
           <div className="flex items-center justify-center h-full">
             <div className="text-xl text-white">Loading...</div>
           </div>
-        {/* </main> */}
+        </main>
       </div>
     );
   }
@@ -141,24 +142,28 @@ export default function Home() {
   if (error) {
     return (
       <div className="flex h-screen">
-        {/* <Sidebar onToggle={(collapsed) => setSidebarCollapsed(collapsed)} /> */}
-        {/* <main className={`flex-1 p-8 overflow-auto transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}> */}
+        <Sidebar onToggle={(collapsed) => setSidebarCollapsed(collapsed)} />
+        <main className={`flex-1 p-8 overflow-auto transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
           <div className="flex items-center justify-center h-full">
             <div className="text-xl text-red-500">{error}</div>
           </div>
-        {/* </main> */}
+        </main>
       </div>
     );
   }
 
   return (
     <div className="flex h-screen bg-[#1a1c1e]">
-      <div className="flex-1 p-8 overflow-auto">
+      <Sidebar onToggle={(collapsed) => setSidebarCollapsed(collapsed)} />
+      <div className={`flex-1 p-8 overflow-auto transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
-          <div className="mb-10">
-            <h1 className="text-4xl font-bold text-white mb-3">Vehicle Performance Dashboard</h1>
-            <p className="text-gray-400 text-lg">Real-time monitoring and analytics</p>
+          <div className="mb-10 flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-bold text-white mb-3">Vehicle Performance Dashboard</h1>
+              <p className="text-gray-400 text-lg">Real-time monitoring and analytics</p>
+            </div>
+            <LogoutButton />
           </div>
 
           {/* Top Stats Cards */}
