@@ -159,32 +159,59 @@ const LoginPage = () => {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '2rem 1rem',
+      padding: '1.5rem 1rem',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      fontSize: '0.9rem'
     }}>
-      <div className="login-card-wrapper">
-        <div className="login-features">
-          <h2 className="features-title">Fleet Management System</h2>
-          <div className="feature-item">
-            <div className="feature-icon">🔍</div>
+      <div className="login-card-wrapper" style={{
+        maxWidth: '1000px',
+        gap: '1.5rem'
+      }}>
+        <div className="login-features" style={{
+          gap: '1rem'
+        }}>
+          <h2 className="features-title" style={{
+            fontSize: '2rem',
+            marginBottom: '1rem'
+          }}>Fleet Management System</h2>
+          <div className="feature-item" style={{
+            padding: '1.25rem'
+          }}>
+            <div className="feature-icon" style={{
+              width: '50px',
+              height: '50px',
+              fontSize: '1.5rem'
+            }}>🔍</div>
             <div className="feature-text">
-              <h3>Real-time Tracking</h3>
-              <p>Monitor your fleet's location and status in real-time</p>
+              <h3 style={{fontSize: '1rem'}}>Real-time Tracking</h3>
+              <p style={{fontSize: '0.85rem'}}>Monitor your fleet's location and status in real-time</p>
             </div>
           </div>
-          <div className="feature-item">
-            <div className="feature-icon">📊</div>
+          <div className="feature-item" style={{
+            padding: '1.25rem'
+          }}>
+            <div className="feature-icon" style={{
+              width: '50px',
+              height: '50px',
+              fontSize: '1.5rem'
+            }}>📊</div>
             <div className="feature-text">
-              <h3>Analytics Dashboard</h3>
-              <p>Comprehensive insights and performance metrics</p>
+              <h3 style={{fontSize: '1rem'}}>Analytics Dashboard</h3>
+              <p style={{fontSize: '0.85rem'}}>Comprehensive insights and performance metrics</p>
             </div>
           </div>
-          <div className="feature-item">
-            <div className="feature-icon">🔔</div>
+          <div className="feature-item" style={{
+            padding: '1.25rem'
+          }}>
+            <div className="feature-icon" style={{
+              width: '50px',
+              height: '50px',
+              fontSize: '1.5rem'
+            }}>🔔</div>
             <div className="feature-text">
-              <h3>Instant Alerts</h3>
-              <p>Get notified about critical events and delays</p>
+              <h3 style={{fontSize: '1rem'}}>Instant Alerts</h3>
+              <p style={{fontSize: '0.85rem'}}>Get notified about critical events and delays</p>
             </div>
           </div>
         </div>
@@ -193,41 +220,56 @@ const LoginPage = () => {
           background: 'rgba(255, 255, 255, 0.95)',
           color: '#333',
           boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
-          borderRadius: '16px'
+          borderRadius: '16px',
+          padding: '2rem',
+          width: '45%'
         }}>
-          <div className="login-header">
+          <div className="login-header" style={{
+            marginBottom: '2rem'
+          }}>
             <div className="login-logo" style={{
               background: 'linear-gradient(135deg, #1976d2, #2196f3)',
-              width: '110px',
-              height: '110px'
+              width: '90px',
+              height: '90px',
+              margin: '0 auto 1.25rem'
             }}>
-              <span className="truck-icon">🚛</span>
+              <span className="truck-icon" style={{fontSize: '2rem'}}>🚛</span>
               <span className="satellite-icon" style={{
-                background: '#0a1f44'
+                background: '#0a1f44',
+                fontSize: '1.25rem'
               }}>📡</span>
             </div>
             <h1 className="login-title" style={{
               color: '#0a1f44',
               background: 'none',
               WebkitBackgroundClip: 'unset',
-              WebkitTextFillColor: 'unset'
+              WebkitTextFillColor: 'unset',
+              fontSize: '1.8rem',
+              marginBottom: '0.35rem'
             }}>Vehicle Monitoring</h1>
             <h2 className="login-subtitle-main" style={{
-              color: '#1976d2'
+              color: '#1976d2',
+              fontSize: '1.1rem',
+              marginBottom: '0.75rem'
             }}>TRACKING DASHBOARD</h2>
             <p className="login-subtitle" style={{
-              color: '#555'
+              color: '#555',
+              fontSize: '0.9rem'
             }}>
               {step === 'phone' ? 'Enter your phone number to continue' : 'Enter the OTP sent to your phone'}
             </p>
           </div>
 
-          <div className="step-indicator">
+          <div className="step-indicator" style={{marginBottom: '1.5rem'}}>
             <div className={`step-dot ${step === 'phone' ? 'active' : 'completed'}`} style={{
-              background: step === 'phone' ? '#1976d2' : step === 'otp' ? '#ccc' : '#4caf50'
+              background: step === 'phone' ? '#1976d2' : step === 'otp' ? '#ccc' : '#4caf50',
+              width: '10px',
+              height: '10px'
             }}></div>
             <div className={`step-dot ${step === 'otp' ? 'active' : ''}`} style={{
-              background: step === 'otp' ? '#1976d2' : '#ccc'
+              background: step === 'otp' ? '#1976d2' : '#ccc',
+              width: '10px',
+              height: '10px'
             }}></div>
           </div>
 
@@ -235,7 +277,10 @@ const LoginPage = () => {
             <div className="error-message" style={{
               background: 'rgba(244, 67, 54, 0.1)',
               borderColor: 'rgba(244, 67, 54, 0.3)',
-              color: '#f44336'
+              color: '#f44336',
+              padding: '0.6rem 0.8rem',
+              fontSize: '0.85rem',
+              marginBottom: '0.75rem'
             }}>
               <span>⚠️</span>
               {error}
@@ -246,20 +291,31 @@ const LoginPage = () => {
             <div className="success-message" style={{
               background: 'rgba(76, 175, 80, 0.1)',
               borderColor: 'rgba(76, 175, 80, 0.3)',
-              color: '#4caf50'
+              color: '#4caf50',
+              padding: '0.6rem 0.8rem',
+              fontSize: '0.85rem',
+              marginBottom: '0.75rem'
             }}>
               <span>✅</span>
               {success}
             </div>
           )}
 
-          <form className="login-form" onSubmit={(e) => e.preventDefault()}>
+          <form className="login-form" onSubmit={(e) => e.preventDefault()} style={{gap: '1.25rem'}}>
             {step === 'phone' ? (
               <>
                 <div className="form-group">
-                  <label className="form-label" style={{ color: '#0a1f44' }}>PHONE NUMBER</label>
+                  <label className="form-label" style={{ 
+                    color: '#0a1f44', 
+                    fontSize: '0.75rem',
+                    marginBottom: '0.4rem'
+                  }}>PHONE NUMBER</label>
                   <div className="phone-input">
-                    <span className="phone-prefix" style={{ color: '#1976d2' }}>+91</span>
+                    <span className="phone-prefix" style={{ 
+                      color: '#1976d2',
+                      fontSize: '0.9rem',
+                      left: '1rem'
+                    }}>+91</span>
                     <input
                       type="tel"
                       className="form-input"
@@ -271,7 +327,10 @@ const LoginPage = () => {
                       style={{
                         background: 'rgba(25, 118, 210, 0.05)',
                         borderColor: 'rgba(25, 118, 210, 0.2)',
-                        color: '#333'
+                        color: '#333',
+                        padding: '0.8rem 1.1rem 0.8rem 2.6rem',
+                        fontSize: '0.9rem',
+                        borderRadius: '10px'
                       }}
                     />
                   </div>
@@ -284,7 +343,10 @@ const LoginPage = () => {
                   disabled={loading || phone.length !== 10}
                   style={{
                     background: 'linear-gradient(135deg, #1976d2, #2196f3)',
-                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)'
+                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)',
+                    padding: '0.8rem 1.8rem',
+                    fontSize: '0.95rem',
+                    borderRadius: '10px'
                   }}
                 >
                   {loading ? (
@@ -300,7 +362,11 @@ const LoginPage = () => {
             ) : (
               <>
                 <div className="form-group">
-                  <label className="form-label" style={{ color: '#0a1f44' }}>ENTER OTP</label>
+                  <label className="form-label" style={{ 
+                    color: '#0a1f44',
+                    fontSize: '0.75rem',
+                    marginBottom: '0.4rem'
+                  }}>ENTER OTP</label>
                   <OtpInput
                     length={6}
                     value={otp}
@@ -316,7 +382,10 @@ const LoginPage = () => {
                   disabled={loading || otp.length !== 6}
                   style={{
                     background: 'linear-gradient(135deg, #1976d2, #2196f3)',
-                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)'
+                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.4)',
+                    padding: '0.8rem 1.8rem',
+                    fontSize: '0.95rem',
+                    borderRadius: '10px'
                   }}
                 >
                   {loading ? (
@@ -329,8 +398,12 @@ const LoginPage = () => {
                   )}
                 </button>
 
-                <div className="resend-otp">
-                  <p className="resend-text" style={{ color: '#555' }}>
+                <div className="resend-otp" style={{marginTop: '0.75rem'}}>
+                  <p className="resend-text" style={{ 
+                    color: '#555',
+                    fontSize: '0.85rem',
+                    marginBottom: '0.4rem'
+                  }}>
                     Didn't receive the OTP?
                   </p>
                   <button
@@ -338,7 +411,10 @@ const LoginPage = () => {
                     className="resend-button"
                     onClick={handleResendOtp}
                     disabled={!canResend || loading}
-                    style={{ color: '#1976d2' }}
+                    style={{ 
+                      color: '#1976d2',
+                      fontSize: '0.85rem'
+                    }}
                   >
                     {canResend ? 'Resend OTP' : `Resend in ${resendTimer}s`}
                   </button>
@@ -350,7 +426,10 @@ const LoginPage = () => {
                   onClick={handleBackToPhone}
                   style={{
                     borderColor: 'rgba(25, 118, 210, 0.2)',
-                    color: '#1976d2'
+                    color: '#1976d2',
+                    padding: '0.65rem',
+                    fontSize: '0.85rem',
+                    borderRadius: '8px'
                   }}
                 >
                   ← Back to Phone Number
@@ -361,7 +440,10 @@ const LoginPage = () => {
         </div>
       </div>
       
-      <div className="login-footer">
+      <div className="login-footer" style={{
+        marginTop: '1.5rem',
+        fontSize: '0.8rem'
+      }}>
         <p>© 2023 Fleet Monitoring System | Secure Login</p>
       </div>
     </div>
