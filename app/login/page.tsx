@@ -191,11 +191,7 @@ const LoginPage = () => {
           <div className="feature-item" style={{
             padding: '1.25rem'
           }}>
-            <div className="feature-icon" style={{
-              width: '50px',
-              height: '50px',
-              fontSize: '1.5rem'
-            }}>📊</div>
+            <Image src="/logo1.png" alt="apml-logo" width={100} height={100} />
             <div className="feature-text">
               <h3 style={{fontSize: '1rem'}}>Analytics Dashboard</h3>
               <p style={{fontSize: '0.85rem'}}>Comprehensive insights and performance metrics</p>
