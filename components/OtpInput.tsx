@@ -85,25 +85,25 @@ const OtpInput: React.FC<OtpInputProps> = ({ length, value, onChange, disabled =
   const inputStyle = {
     width: '60px',
     height: '60px',
-    background: 'rgba(25, 118, 210, 0.05)',
-    border: '2px solid rgba(25, 118, 210, 0.2)',
+    background: 'rgba(255, 255, 255, 0.08)',
+    border: '2px solid rgba(255, 255, 255, 0.7)',
     borderRadius: '12px',
     textAlign: 'center' as const,
     fontSize: '1.5rem',
     fontWeight: 700,
-    color: '#0a1f44',
+    color: '#fff',
     transition: 'all 0.3s ease'
   };
 
   const filledStyle = {
     ...inputStyle,
-    border: '2px solid #1976d2',
-    background: 'rgba(25, 118, 210, 0.1)',
-    boxShadow: '0 0 10px rgba(25, 118, 210, 0.2)'
+    // border: '2px solid #fff',
+    background: 'rgba(255, 255, 255, 0.15)',
+    boxShadow: '0 0 10px rgba(255,255,255,0.15)'
   };
 
   return (
-    <div className="otp-container">
+    <div className="otp-container" style={{ display: 'flex', gap: '12px' }}>
       {Array.from({ length }, (_, index) => (
         <input
           key={index}

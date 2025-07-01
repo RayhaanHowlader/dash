@@ -15,6 +15,13 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the 3D dashboard component with no SSR
+const ThreeDDashboard = dynamic(
+  () => import('@/components/3d-dashboard/ThreeDDashboard'),
+  { ssr: false }
+);
 
 ChartJS.register(
   CategoryScale,
@@ -56,6 +63,7 @@ export default function Home() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showThreeD, setShowThreeD] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -125,6 +133,10 @@ export default function Home() {
     ],
   };
 
+  const toggleThreeD = () => {
+    setShowThreeD(!showThreeD);
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen">
@@ -151,6 +163,31 @@ export default function Home() {
     );
   }
 
+  // If 3D view is active, show the ThreeDDashboard
+  if (showThreeD) {
+    return (
+      <div className="flex h-screen bg-[#1a1c1e]">
+        <Sidebar onToggle={(collapsed) => setSidebarCollapsed(collapsed)} />
+        <div className={`flex-1 relative transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-56'}`}>
+          {/* 3D Dashboard View */}
+          <div className="absolute inset-0">
+            <ThreeDDashboard />
+          </div>
+          
+          {/* Back button */}
+          <button 
+            onClick={toggleThreeD}
+            className="absolute top-4 right-4 z-50 bg-[#1e293b] p-3 rounded-full shadow-lg border border-[#334155] hover:bg-[#334155]"
+          >
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-[#1a1c1e]">
       <Sidebar onToggle={(collapsed) => setSidebarCollapsed(collapsed)} />
@@ -158,182 +195,25 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="mb-6 flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Vehicle Performance Dashboard</h1>
-              <p className="text-gray-400 text-base">Real-time monitoring and analytics</p>
-            </div>
+         
+            <div className="flex items-center gap-4">
+              {/* 3D View Toggle Button */}
+              <button
+                onClick={toggleThreeD}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all group relative"
+                aria-label="Toggle 3D Dashboard View"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                </svg>
+                <span>3D View</span>
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                  Experience an interactive 3D globe visualization
+                </div>
+              </button>
             <LogoutButton />
-          </div>
-
-          {/* Top Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-            <div className="bg-[#1e293b] p-5 rounded-xl shadow-lg border border-[#334155] hover:border-[#3b82f6] transition-all duration-300 transform hover:scale-[1.02]">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Total Fleet</p>
-                  <p className="text-3xl font-bold text-white mt-1">{stats.total}</p>
-                </div>
-                <div className="w-10 h-10 bg-[#3b82f6]/10 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-[#3b82f6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-              </div>
             </div>
-            
-            <div className="bg-[#1e293b] p-5 rounded-xl shadow-lg border border-[#334155] hover:border-[#10b981] transition-all duration-300 transform hover:scale-[1.02]">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">Active Vehicles</p>
-                  <p className="text-3xl font-bold text-white mt-1">{stats.active}</p>
-                </div>
-                <div className="w-10 h-10 bg-[#10b981]/10 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-[#10b981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-[#1e293b] p-5 rounded-xl shadow-lg border border-[#334155] hover:border-[#f59e0b] transition-all duration-300 transform hover:scale-[1.02]">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">In Maintenance</p>
-                  <p className="text-3xl font-bold text-white mt-1">{stats.maintenance}</p>
-                </div>
-                <div className="w-10 h-10 bg-[#f59e0b]/10 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-[#f59e0b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
-            {/* Vehicle Distribution Chart */}
-            <div className="bg-[#1e293b] p-5 rounded-xl shadow-lg border border-[#334155]">
-              <h2 className="text-lg font-bold text-white mb-4">Vehicle Distribution</h2>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex space-x-3">
-                  <button className="px-3 py-1.5 text-xs font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#1e293b]">
-                    Daily
-                  </button>
-                  <button className="px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-white rounded-lg hover:bg-[#334155] focus:outline-none">
-                    Weekly
-                  </button>
-                </div>
-              </div>
-              <div className="relative h-[240px]">
-                <Doughnut
-                  data={doughnutData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'right',
-                        labels: {
-                          color: '#94a3b8',
-                          font: {
-                            size: 11,
-                            weight: 'bold'
-                          },
-                          padding: 15
-                        }
-                      }
-                    },
-                    cutout: '65%'
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Vehicle Status Overview */}
-            <div className="bg-[#1e293b] p-5 rounded-xl shadow-lg border border-[#334155]">
-              <h2 className="text-lg font-bold text-white mb-4">Status Overview</h2>
-              <div className="space-y-4">
-                {/* Vehicle Details Table */}
-                <div className="overflow-hidden">
-                  <table className="min-w-full">
-                    <thead>
-                      <tr>
-                        <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider pb-3">Vehicle Type</th>
-                        <th className="text-center text-xs font-medium text-gray-400 uppercase tracking-wider pb-3">Count</th>
-                        <th className="text-right text-xs font-medium text-gray-400 uppercase tracking-wider pb-3">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-800">
-                      <tr>
-                        <td className="py-2 text-xs font-medium text-white">SXL</td>
-                        <td className="py-2 text-center text-xs text-gray-300">{stats.sxl}</td>
-                        <td className="py-2 text-right">
-                          <span className="px-2 py-1 text-xs font-medium text-green-400 bg-green-400/10 rounded-full">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 text-xs font-medium text-white">MXL</td>
-                        <td className="py-2 text-center text-xs text-gray-300">{stats.mxl}</td>
-                        <td className="py-2 text-right">
-                          <span className="px-2 py-1 text-xs font-medium text-green-400 bg-green-400/10 rounded-full">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 text-xs font-medium text-white">Trailer</td>
-                        <td className="py-2 text-center text-xs text-gray-300">{stats.trailer}</td>
-                        <td className="py-2 text-right">
-                          <span className="px-2 py-1 text-xs font-medium text-green-400 bg-green-400/10 rounded-full">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 text-xs font-medium text-white">Car Carrier</td>
-                        <td className="py-2 text-center text-xs text-gray-300">{stats.carCarrier}</td>
-                        <td className="py-2 text-right">
-                          <span className="px-2 py-1 text-xs font-medium text-green-400 bg-green-400/10 rounded-full">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 text-xs font-medium text-white">Double Decker</td>
-                        <td className="py-2 text-center text-xs text-gray-300">{stats.doubleDecker}</td>
-                        <td className="py-2 text-right">
-                          <span className="px-2 py-1 text-xs font-medium text-green-400 bg-green-400/10 rounded-full">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 text-xs font-medium text-white">17 Feet</td>
-                        <td className="py-2 text-center text-xs text-gray-300">{stats.feet17}</td>
-                        <td className="py-2 text-right">
-                          <span className="px-2 py-1 text-xs font-medium text-green-400 bg-green-400/10 rounded-full">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 text-xs font-medium text-white">Local Vehicle</td>
-                        <td className="py-2 text-center text-xs text-gray-300">{stats.localvehicle}</td>
-                        <td className="py-2 text-right">
-                          <span className="px-2 py-1 text-xs font-medium text-green-400 bg-green-400/10 rounded-full">
-                            Active
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
+          </div>         
         </div>
       </div>
     </div>
