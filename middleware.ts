@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Check if user is authenticated
+  // Check if user is authenticated via cookie
   const isAuthenticated = request.cookies.get('isAuthenticated')?.value === 'true';
   
   // Public routes that don't require authentication
@@ -30,14 +30,11 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
+// Only run middleware for these routes (protect all except static, image, favicon, and public assets)
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
+    // Exclude Next.js internals and public assets
+    '/((?!_next/static|_next/image|favicon.ico|logo.png|logo1.png|apml-logo.png|textures|public|api/auth/gen-otp|api/auth/verify-otp|api/auth/logout|login).*)',
+    '/', // Protect homepage
   ],
 }; 

@@ -15,4 +15,9 @@ export function withErrorHandling(handler: Function, mongoClient: MongoClient) {
       // Don't close the connection as it's managed by the singleton
     }
   };
+}
+
+// Utility function for className concatenation
+export function cn(...args: any[]) {
+  return args.filter(Boolean).join(' ');
 } 
