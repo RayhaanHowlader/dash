@@ -23,6 +23,9 @@ import Pie3DChart from '../components/Pie3DChart';
 import BarChartOnly from '../components/BarChartOnly';
 import { useRouter } from 'next/navigation';
 import { Typewriter } from 'react-simple-typewriter';
+import Lottie from 'lottie-react';
+import movingTruckAnimation from '../public/animations/moving-truck.json'; // Place your Lottie JSON here
+import truckAnimate from '../public/animations/truck-animate.json'; // New truck animation for before the header
 
 // Dynamically import the 3D dashboard component with no SSR
 const ThreeDDashboard = dynamic(
@@ -157,6 +160,12 @@ export default function Home() {
   const [branchDataLoading, setBranchDataLoading] = useState(true);
   const [barChartData, setBarChartData] = useState<any[]>([]);
   const [barLoading, setBarLoading] = useState(false);
+  const [haltingTop10, setHaltingTop10] = useState<any[]>([]);
+  const [haltingBranch, setHaltingBranch] = useState<any[]>([]);
+  const [haltingLoading, setHaltingLoading] = useState(false);
+  const [selectedHaltingGroup, setSelectedHaltingGroup] = useState<string>('LINE_SXL');
+  const [haltingGroupData, setHaltingGroupData] = useState<{ [key: string]: { totalHalting: number; vehicles: any[] } }>({});
+  const [haltingGroupTop10, setHaltingGroupTop10] = useState<any[]>([]);
 
   // Client-side auth check (fallback)
   useEffect(() => {
@@ -264,6 +273,121 @@ export default function Home() {
       .finally(() => setBarLoading(false));
   }, [selectedVehicleType]);
 
+  // --- Fetch all vehicles and halting hours for new charts ---
+  useEffect(() => {
+    async function fetchHaltingData() {
+      setHaltingLoading(true);
+      try {
+        // Get all vehicles from all groups
+        const groupKeys = vehicleGroupMap.map(g => g.key);
+        let allVehicles: any[] = [];
+        for (const group of groupKeys) {
+          const res = await fetch(`/api/vehicles?group=${group}`);
+          const result = await res.json();
+          if (result.status === 'success' && result.data?.vehicles) {
+            allVehicles = allVehicles.concat(result.data.vehicles); // DO NOT filter by available
+          }
+        }
+        const vehicleNumbers = allVehicles.map(v => v.vehicleNumber);
+        // Chunk for batch API
+        const chunkArray = (arr: string[], size: number) => Array.from({ length: Math.ceil(arr.length / size) }, (_, i) => arr.slice(i * size, i * size + size));
+        const vehicleChunks = chunkArray(vehicleNumbers, 50);
+        // Fetch halting hours for all vehicles
+        const haltingResults = await Promise.all(
+          vehicleChunks.map(chunk =>
+            fetch(`/api/halting-hours/batch?vnames=${chunk.join(',')}`).then(resp => resp.json())
+          )
+        );
+        const waypointsMap = haltingResults.reduce((acc, result) => {
+          return result.status === 'success' ? { ...acc, ...result.data } : acc;
+        }, {});
+        // Top 10 vehicles by halting hours (all vehicles)
+        const haltingArr = Object.values(waypointsMap).map((w: any) => ({
+          branch: w.vname,
+          count: w.haltingHours || 0,
+          vehicles: [{ vehicleNumber: w.vname, haltingHours: w.haltingHours || 0 }]
+        }));
+        const top10 = haltingArr.sort((a, b) => b.count - a.count).slice(0, 10);
+        setHaltingTop10(top10);
+        // Branch-wise halting vehicles (all vehicles)
+        const branchMap: Record<string, { count: number; vehicles: { vehicleNumber: string; haltingHours: number }[] }> = {};
+        Object.values(waypointsMap).forEach((w: any) => {
+          const branch = w.name || '-';
+          if (!branchMap[branch]) branchMap[branch] = { count: 0, vehicles: [] };
+          branchMap[branch].count += 1;
+          branchMap[branch].vehicles.push({ vehicleNumber: w.vname, haltingHours: w.haltingHours || 0 });
+        });
+        const branchArr = Object.entries(branchMap).map(([branch, { count, vehicles }]) => ({ branch, count, vehicles }));
+        setHaltingBranch(branchArr);
+      } catch (e) {
+        setHaltingTop10([]);
+        setHaltingBranch([]);
+      } finally {
+        setHaltingLoading(false);
+      }
+    }
+    fetchHaltingData();
+  }, []);
+
+  // --- Compute halting hours by group for pie chart ---
+  useEffect(() => {
+    // Fetch all vehicles from all groups and their halting hours (already done in haltingTop10/haltingBranch)
+    async function computeHaltingGroupData() {
+      // Get all vehicles from all groups
+      const groupKeys = vehicleGroupMap.map(g => g.key);
+      let allVehicles: any[] = [];
+      for (const group of groupKeys) {
+        const res = await fetch(`/api/vehicles?group=${group}`);
+        const result = await res.json();
+        if (result.status === 'success' && result.data?.vehicles) {
+          allVehicles = allVehicles.concat(result.data.vehicles.map((v: any) => ({ ...v, vehicleGroup: group })));
+        }
+      }
+      const vehicleNumbers = allVehicles.map(v => v.vehicleNumber);
+      // Chunk for batch API
+      const chunkArray = (arr: string[], size: number) => Array.from({ length: Math.ceil(arr.length / size) }, (_, i) => arr.slice(i * size, i * size + size));
+      const vehicleChunks = chunkArray(vehicleNumbers, 50);
+      // Fetch halting hours for all vehicles
+      const haltingResults = await Promise.all(
+        vehicleChunks.map(chunk =>
+          fetch(`/api/halting-hours/batch?vnames=${chunk.join(',')}`).then(resp => resp.json())
+        )
+      );
+      const waypointsMap = haltingResults.reduce((acc, result) => {
+        return result.status === 'success' ? { ...acc, ...result.data } : acc;
+      }, {});
+      // Group by vehicleGroup
+      const groupData: { [key: string]: { totalHalting: number; vehicles: any[] } } = {};
+      allVehicles.forEach(v => {
+        const h = waypointsMap[v.vehicleNumber]?.haltingHours || 0;
+        if (!groupData[v.vehicleGroup]) groupData[v.vehicleGroup] = { totalHalting: 0, vehicles: [] };
+        groupData[v.vehicleGroup].totalHalting += h;
+        groupData[v.vehicleGroup].vehicles.push({ ...v, haltingHours: h });
+      });
+      setHaltingGroupData(groupData);
+      // Set top 10 for default group
+      if (groupData[selectedHaltingGroup]) {
+        const top10 = groupData[selectedHaltingGroup].vehicles
+          .sort((a, b) => b.haltingHours - a.haltingHours)
+          .slice(0, 10)
+          .map(v => ({ branch: v.vehicleNumber, count: v.haltingHours, vehicles: [{ vehicleNumber: v.vehicleNumber, haltingHours: v.haltingHours }] }));
+        setHaltingGroupTop10(top10);
+      }
+    }
+    computeHaltingGroupData();
+  }, []);
+
+  // Update top 10 when selectedHaltingGroup changes
+  useEffect(() => {
+    if (haltingGroupData[selectedHaltingGroup]) {
+      const top10 = haltingGroupData[selectedHaltingGroup].vehicles
+        .sort((a, b) => b.haltingHours - a.haltingHours)
+        .slice(0, 10)
+        .map(v => ({ branch: v.vehicleNumber, count: v.haltingHours, vehicles: [{ vehicleNumber: v.vehicleNumber, haltingHours: v.haltingHours }] }));
+      setHaltingGroupTop10(top10);
+    }
+  }, [selectedHaltingGroup, haltingGroupData]);
+
   const doughnutData = {
     labels: ['SXL', 'MXL', 'Trailer', 'Car Carrier', 'DD', '17 Feet', 'Local Vehicle'],
     datasets: [
@@ -365,15 +489,24 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen bg-[#1a1c1e]">
+    <div className="flex h-screen bg-gradient-to-br from-[#23272F] via-[#1a1c2e] to-[#0a0c1a] relative overflow-hidden">
+      {/* Subtle purple gradient overlay for interactivity */}
+      <div className="pointer-events-none absolute inset-0 z-0" style={{ background: 'radial-gradient(circle at 80% 20%, rgba(168,85,247,0.18) 0%, transparent 70%)' }} />
       <Sidebar onToggle={(collapsed) => setSidebarCollapsed(collapsed)} />
-      <div className={`flex-1 p-5 overflow-auto transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-56'} slide-down-fade-in`}>
+      <div className={`flex-1 p-5 overflow-auto transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-56'} slide-down-fade-in`} style={{ position: 'relative', zIndex: 1 }}>
         <div className="max-w-7xl mx-auto" style={{ marginLeft: 0, paddingLeft: 0 }}>
-          {/* Header Section */}
-          <div className="mb-10 ml-[270px] flex justify-center items-center">
+          {/* Header Section with moving truck animation before the text */}
+          <div className="mb-10 ml-[270px] flex justify-center items-center relative">
+            <div className="mr-4 flex items-center" style={{ height: 100 }}>
+              <Lottie animationData={truckAnimate} loop={true} style={{ width: 160, height: 200 }} />
+            </div>
             <h1 className="text-4xl font-bold text-white text-center ">
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Vehicle</span> Fleet Dashboard
             </h1>
+            {/* Remove or comment out the right-side animation if present */}
+            <div className="ml-6 flex items-center" style={{ height: 60 }}>
+              <Lottie animationData={movingTruckAnimation} loop={true} style={{ width: 90, height: 200 }} />
+            </div>
           </div>
 
           {/* Main Dashboard Content - Show Pie and Bar chart side by side */}
@@ -395,6 +528,8 @@ export default function Home() {
                   />
                 </div>
               )}
+                
+             
               <Pie3DChart
                 data={pieData}
                 labels={pieLabels}
@@ -403,6 +538,7 @@ export default function Home() {
                   setSelectedVehicleType(vehicleTypes[index]);
                 }}
               />
+         
             </div>
             {/* Bar Chart on the right */}
             <div className="flex-1 lg:w-3/5" style={{ minWidth: '0', width: '100%', maxWidth: '1200px', margin: '0', display: 'flex', alignItems: 'center', justifyContent: 'center',marginLeft: "250px", paddingLeft: 0 }}>
@@ -413,6 +549,45 @@ export default function Home() {
                   <BarChartOnly data={barChartData} pageName={selectedVehicleType} />
                 )
               )}
+            </div>
+          </div>
+          {/* --- Top 10 Halting Vehicles Bar Chart --- */}
+          <div className="w-full flex flex-col items-center mb-12">
+            <h2 className="text-2xl font-bold mb-4 text-blue-400">Top 10 Vehicles with Highest Halting Hours</h2>
+            <div className="flex flex-col md:flex-row w-full justify-center items-start gap-8">
+              {/* Halting Hours Pie Chart */}
+              <div className="flex-1" style={{ maxWidth: '480px', minWidth: '320px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', marginRight: 180 }}>
+                <Pie3DChart
+                  data={vehicleGroupMap.map(g => haltingGroupData[g.key]?.totalHalting || 0)}
+                  labels={vehicleGroupMap.map(g => g.label)}
+                  onSegmentClick={index => {
+                    const groupKeys = vehicleGroupMap.map(g => g.key);
+                    setSelectedHaltingGroup(groupKeys[index]);
+                  }}
+                />
+                <div style={{ marginTop: 16, color: '#fff', fontWeight: 'bold', fontSize: 20 }}>
+                  {`Total Halting Hours: ${haltingGroupData[selectedHaltingGroup]?.totalHalting || 0}`}
+                </div>
+              </div>
+              {/* Top 10 Halting Vehicles Bar Chart for selected group */}
+              <div className="flex-1" style={{ minWidth: 0, width: '100%', maxWidth: '900px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BarChartOnly
+                  data={haltingGroupTop10}
+                  title={`TOP 10 HALTING - ${vehicleGroupMap.find(g => g.key === selectedHaltingGroup)?.label || selectedHaltingGroup}`}
+                  logoUrl="/logo.png"
+                  barColor="#3b82f6"
+                  yAxisLabel="Halting Hours"
+                  chartWidth={890}
+                  chartMinWidth={890}
+                />
+              </div>
+            </div>
+          </div>
+          {/* --- Branch-wise Halting Vehicles Bar Chart --- */}
+          <div className="w-full flex flex-col items-center mb-12">
+            <h2 className="text-2xl font-bold mb-4 text-blue-400">Branch-wise Halting Vehicles</h2>
+            <div className="w-full flex justify-center">
+              <BarChartOnly data={haltingBranch} pageName="Branch Halting" logoUrl="/logo.png" barColor="#60a5fa" chartWidth={1300} chartMinWidth={1300} />
             </div>
           </div>
         </div>

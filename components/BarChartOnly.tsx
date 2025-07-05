@@ -25,11 +25,17 @@ interface BarChartProps {
   data: { branch: string; count: number; vehicles: VehicleInfo[] }[];
   logoUrl?: string;
   pageName?: string;
+  barColor?: string;
+  yAxisLabel?: string;
+  chartWidth?: string | number;
+  chartMinWidth?: string | number;
+  chartMinHeight?: string | number;
+  title?: string;
 }
 
 const fontFamily = `'Inter', 'Roboto', 'IBM Plex Sans', 'Montserrat', 'sans-serif'`;
 
-const BarChartOnly = forwardRef<{ chartRef: React.RefObject<ChartJS<'bar'>>, containerRef: React.RefObject<HTMLDivElement> }, BarChartProps>(({ data, logoUrl, pageName }, ref) => {
+const BarChartOnly = forwardRef<{ chartRef: React.RefObject<ChartJS<'bar'>>, containerRef: React.RefObject<HTMLDivElement> }, BarChartProps>(({ data, logoUrl, pageName, barColor, yAxisLabel, chartWidth, chartMinWidth, chartMinHeight, title }, ref) => {
   const chartRef = useRef<ChartJS<'bar'> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -50,11 +56,11 @@ const BarChartOnly = forwardRef<{ chartRef: React.RefObject<ChartJS<'bar'>>, con
       {
         label: 'Available Vehicles',
         data: data.map(d => d.count),
-        backgroundColor: '#4fc3f7',
+        backgroundColor: barColor || '#4fc3f7',
         maxBarThickness: 100,
         categoryPercentage: 0.7,
         barPercentage: 1.0,
-        hoverBackgroundColor: '#2196f3',
+        hoverBackgroundColor: barColor ? barColor : '#2196f3',
         borderSkipped: false,
         order: 1,
       },
@@ -62,6 +68,7 @@ const BarChartOnly = forwardRef<{ chartRef: React.RefObject<ChartJS<'bar'>>, con
   };
 
   const chartTitle = pageName ? `Available Vehicles by Branch - ${pageName.toUpperCase()}` : 'Available Vehicles by Branch';
+  const displayTitle = title || chartTitle;
 
   const options: ChartOptions<'bar'> = {
     responsive: true,
@@ -72,7 +79,7 @@ const BarChartOnly = forwardRef<{ chartRef: React.RefObject<ChartJS<'bar'>>, con
       },
       title: {
         display: true,
-        text: chartTitle,
+        text: displayTitle,
         color: '#fff',
         font: { size: 36, family: fontFamily, weight: 'bold' },
         padding: { top: 20, bottom: 20 },
@@ -121,7 +128,7 @@ const BarChartOnly = forwardRef<{ chartRef: React.RefObject<ChartJS<'bar'>>, con
       y: {
         title: {
           display: true,
-          text: 'Available Vehicles',
+          text: yAxisLabel || 'Available Vehicles',
           color: '#fff',
           font: { size: 22, family: fontFamily },
         },
@@ -167,14 +174,14 @@ const BarChartOnly = forwardRef<{ chartRef: React.RefObject<ChartJS<'bar'>>, con
         background: '#1a1a2e',
         borderRadius: 20,
         boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-        minHeight: 600,
+        minHeight: chartMinHeight || 600,
         maxWidth: '100%',
-        width: '1050px',
-        minWidth: '1050px',
+        width: chartWidth || '1050px',
+        minWidth: chartMinWidth || '1050px',
         marginBottom: 32,
       }}
     >
-      <div className="relative" style={{ minHeight: 600, width: '1050px', minWidth: '1050px' }}>
+      <div className="relative" style={{ minHeight: chartMinHeight || 600, width: chartWidth || '1050px', minWidth: chartMinWidth || '1050px' }}>
         {logoUrl && (
           <img src={logoUrl} alt="Logo" className="absolute left-4 top-4 w-20 h-20 opacity-80 z-10" />
         )}
