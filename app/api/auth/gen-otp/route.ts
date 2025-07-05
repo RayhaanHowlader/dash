@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getMongoClient } from '@/lib/db';
 import { generateSalt, hashOtp } from '@/lib/crypto';
