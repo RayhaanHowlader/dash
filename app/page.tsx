@@ -497,16 +497,16 @@ export default function Home() {
         <div className="max-w-7xl mx-auto" style={{ marginLeft: 0, paddingLeft: 0 }}>
           {/* Header Section with moving truck animation before the text */}
           <div className="mb-10 ml-[270px] flex justify-center items-center relative">
-            <div className="mr-4 flex items-center" style={{ height: 100 }}>
-              <Lottie animationData={truckAnimate} loop={true} style={{ width: 160, height: 200 }} />
+            <div className="flex items-center" style={{ height: 100 }}>
+              <Lottie animationData={truckAnimate} loop={true} style={{ width: 160, height: 200, filter: 'brightness(0) invert(1)' }} />
             </div>
             <h1 className="text-4xl font-bold text-white text-center ">
               <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Vehicle</span> Fleet Dashboard
             </h1>
             {/* Remove or comment out the right-side animation if present */}
-            <div className="ml-6 flex items-center" style={{ height: 60 }}>
+            {/* <div className="ml-6 flex items-center" style={{ height: 60 }}>
               <Lottie animationData={movingTruckAnimation} loop={true} style={{ width: 90, height: 200 }} />
-            </div>
+            </div> */}
           </div>
 
           {/* Main Dashboard Content - Show Pie and Bar chart side by side */}
@@ -546,15 +546,14 @@ export default function Home() {
                 barLoading ? (
                   <div className="flex items-center justify-center h-40 text-white">Loading branch data...</div>
                 ) : (
-                  <BarChartOnly data={barChartData} pageName={selectedVehicleType} />
+                  <BarChartOnly data={barChartData} pageName={selectedVehicleType} logoUrl="/logo.png"/>
                 )
               )}
             </div>
           </div>
           {/* --- Top 10 Halting Vehicles Bar Chart --- */}
           <div className="w-full flex flex-col items-center mb-12">
-            <h2 className="text-2xl font-bold mb-4 text-blue-400">Top 10 Vehicles with Highest Halting Hours</h2>
-            <div className="flex flex-col md:flex-row w-full justify-center items-start gap-8">
+            <div className="flex flex-col md:flex-row w-full justify-center items-start gap-8 mt-12">
               {/* Halting Hours Pie Chart */}
               <div className="flex-1" style={{ maxWidth: '480px', minWidth: '320px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', marginRight: 180 }}>
                 <Pie3DChart
@@ -570,26 +569,21 @@ export default function Home() {
                 </div>
               </div>
               {/* Top 10 Halting Vehicles Bar Chart for selected group */}
-              <div className="flex-1" style={{ minWidth: 0, width: '100%', maxWidth: '900px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="flex-1" style={{ minWidth: 0, width: '100%', maxWidth: '900px', display: 'flex', alignItems: 'center', justifyContent: 'center',marginLeft: 100}}>
                 <BarChartOnly
                   data={haltingGroupTop10}
                   title={`TOP 10 HALTING - ${vehicleGroupMap.find(g => g.key === selectedHaltingGroup)?.label || selectedHaltingGroup}`}
                   logoUrl="/logo.png"
                   barColor="#3b82f6"
                   yAxisLabel="Halting Hours"
-                  chartWidth={890}
-                  chartMinWidth={890}
+                  chartWidth={1050}
+                  chartMinWidth={1050}
                 />
               </div>
             </div>
           </div>
           {/* --- Branch-wise Halting Vehicles Bar Chart --- */}
-          <div className="w-full flex flex-col items-center mb-12">
-            <h2 className="text-2xl font-bold mb-4 text-blue-400">Branch-wise Halting Vehicles</h2>
-            <div className="w-full flex justify-center">
-              <BarChartOnly data={haltingBranch} pageName="Branch Halting" logoUrl="/logo.png" barColor="#60a5fa" chartWidth={1300} chartMinWidth={1300} />
-            </div>
-          </div>
+        
         </div>
       </div>
     </div>
